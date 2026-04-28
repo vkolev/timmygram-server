@@ -32,7 +32,7 @@ func Load() *Config {
 	cfg.FFmpeg.OutputRatio = "9:16"
 	cfg.Storage.Path = "./videos"
 
-	if data, err := os.ReadFile("internal/config/config.yaml"); err == nil {
+	if data, err := os.ReadFile("config.yaml"); err == nil {
 		yaml.Unmarshal(data, &cfg)
 	}
 

@@ -1,9 +1,13 @@
 server:
   port: 8080
+  url: "http://localhost:8080"
+
 ffmpeg:
   max_duration: 60
   output_ratio: "9:16"
-db_path: "./timmygramm.db"
+
+db_path: "/app/data/timmygram.db"
 jwt_secret: "your-strong-secret-key-here"
+
 storage:
-  path: "./videos"
+  path: "/app/videos"

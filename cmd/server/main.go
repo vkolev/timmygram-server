@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-	"strings"
 	"timmygram/internal/config"
 	authcontroller "timmygram/internal/controller/auth"
 	devicecontroller "timmygram/internal/controller/device"
@@ -13,6 +11,7 @@ import (
 	authservice "timmygram/internal/service/auth"
 	deviceservice "timmygram/internal/service/device"
 	videoservice "timmygram/internal/service/video"
+	"timmygram/migrations"
 
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
@@ -41,20 +40,8 @@ func main() {
 	}
 
 	// Apply incremental migrations idempotently.
-	migrations, err := os.ReadFile("migrations/002_devices_update.sql")
-	if err == nil {
-		for _, stmt := range strings.Split(string(migrations), ";") {
-			stmt = strings.TrimSpace(stmt)
-			if stmt == "" {
-				continue
-			}
-			if _, execErr := db.Exec(stmt); execErr != nil {
-				// "duplicate column name" means the migration already ran — safe to ignore.
-				if !strings.Contains(execErr.Error(), "duplicate column") {
-					panic(execErr)
-				}
-			}
-		}
+	if err := migrations.Run(db, "migrations"); err != nil {
+		panic(err)
 	}
 
 	userRepo := repository.NewUserRepository(db)
