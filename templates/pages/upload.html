@@ -1,0 +1,46 @@
+{{ template "dashboard-base" . }}
+
+{{ define "content" }}
+<div class="dashboard-content">
+    <div class="dashboard-welcome">
+        <p class="eyebrow">Parent dashboard</p>
+        <h1>Upload a video</h1>
+        <p class="dashboard-subtitle">Videos are transcoded to portrait format and appear in your child's feed.</p>
+    </div>
+
+    <section class="dashboard-section">
+        <form method="post" action="/upload" enctype="multipart/form-data" class="upload-form">
+
+            {{ if .error }}
+            <p class="form-error">{{ .error }}</p>
+            {{ end }}
+
+            <div class="upload-field">
+                <label for="title">Title <span class="field-optional">(optional)</span></label>
+                <input id="title" name="title" type="text"
+                       placeholder="e.g. Grandma says hi" value="{{ .titleVal }}">
+            </div>
+
+            <div class="upload-field">
+                <label for="video">Video file</label>
+                <p class="field-hint">MP4, MOV or AVI · up to 200 MB · max 60 seconds</p>
+                <label class="file-picker" for="video">
+                    <span class="file-picker-icon">🎬</span>
+                    <span class="file-picker-label">Choose a video file</span>
+                    <input id="video" name="video" type="file" accept="video/*" required
+                           onchange="this.previousElementSibling.textContent = this.files[0]?.name || 'Choose a video file'">
+                </label>
+            </div>
+
+            <div class="upload-actions">
+                <button type="submit" class="button"
+                        onclick="this.disabled=true; this.textContent='Uploading…'; this.form.submit()">
+                    Upload video
+                </button>
+                <a href="/dashboard" class="button button-secondary">Cancel</a>
+            </div>
+
+        </form>
+    </section>
+</div>
+{{ end }}

@@ -1,0 +1,39 @@
+{{ define "dashboard-base" }}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .title }}</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="dashboard-body">
+
+<header class="dashboard-header">
+    <div class="dashboard-header-inner">
+        <a href="/dashboard" class="brand">
+            <span class="brand-mark">TG</span>
+            <span class="brand-name">TimmyGram</span>
+        </a>
+
+        <nav class="dashboard-nav-links">
+            <a href="/dashboard" class="{{ if eq .page "dashboard" }}active{{ end }}">My Feed</a>
+            <a href="/devices" class="{{ if eq .page "devices" }}active{{ end }}">Devices</a>
+        </nav>
+
+        <div class="dashboard-user">
+            <span class="dashboard-username">{{ .username }}</span>
+            <form method="post" action="/logout">
+                <button type="submit" class="button button-small button-outline">Logout</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main class="dashboard-main">
+    {{ template "content" . }}
+</main>
+
+</body>
+</html>
+{{ end }}

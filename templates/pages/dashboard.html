@@ -1,0 +1,53 @@
+{{ template "dashboard-base" . }}
+
+{{ define "content" }}
+<div class="dashboard-content">
+    <div class="dashboard-welcome">
+        <p class="eyebrow">Parent dashboard</p>
+        <h1>Welcome back, {{ .username }}</h1>
+        <p class="dashboard-subtitle">Manage your child's video feed from here.</p>
+    </div>
+
+    <section class="dashboard-section">
+        <div class="dashboard-section-header">
+            <h2>Your videos ({{ len .videos }})</h2>
+            <a href="/upload" class="button">Upload video</a>
+        </div>
+
+        {{ if .videos }}
+        <div class="video-grid">
+            {{ range .videos }}
+            <div class="video-card-item">
+                {{ if .Thumbnail }}
+                <a href="/videos/{{ .ID }}/stream" class="video-thumb-link">
+                    <img src="/videos/{{ .ID }}/thumbnail" alt="{{ .Title }}" class="video-thumb">
+                    <span class="video-play-overlay">▶</span>
+                </a>
+                {{ else }}
+                <div class="video-thumb-placeholder">
+                    {{ if .IsProcessing }}
+                    <span class="processing-badge">Processing…</span>
+                    {{ else }}
+                    <span class="no-thumb-icon">🎬</span>
+                    {{ end }}
+                </div>
+                {{ end }}
+                <div class="video-card-body">
+                    <p class="video-title">{{ if .Title }}{{ .Title }}{{ else }}<em>Untitled</em>{{ end }}</p>
+                    {{ if not .IsProcessing }}
+                    <p class="video-meta">{{ .Duration }}s</p>
+                    {{ end }}
+                </div>
+            </div>
+            {{ end }}
+        </div>
+        {{ else }}
+        <div class="empty-state">
+            <div class="empty-icon">🎬</div>
+            <h3>No videos yet</h3>
+            <p>Once you upload videos, they'll appear here and in your child's feed.</p>
+        </div>
+        {{ end }}
+    </section>
+</div>
+{{ end }}

@@ -1,0 +1,45 @@
+{{ define "base" }}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .title }}</title>
+
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<header class="site-header">
+    <nav class="navbar">
+        <a href="/" class="brand">
+            <span class="brand-mark">TG</span>
+            <span class="brand-name">TimmyGram</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="/" class="{{ if eq .page "home" }}active{{ end }}">Home</a>
+            <a href="/about" class="{{ if eq .page "about" }}active{{ end }}">About</a>
+            {{ if .is_authenticated }}
+            <a href="/dashboard" class="{{ if eq .page "dashboard" }}active{{ end }}">Dashboard</a>
+            <form method="post" action="/logout" class="nav-logout">
+                <button type="submit" class="button button-small">Logout</button>
+            </form>
+            {{ else }}
+            <a href="/login" class="{{ if eq .page "login" }}active{{ end }}">Login</a>
+            <a href="/register" class="button button-small {{ if eq .page "register" }}active-button{{ end }}">Register</a>
+            {{ end }}
+        </div>
+    </nav>
+</header>
+
+<main>
+    {{ template "content" . }}
+</main>
+
+<footer class="site-footer">
+    <p>Built for families. Made for safe little moments.</p>
+    <p class="muted">&copy; TimmyGram</p>
+</footer>
+</body>
+</html>
+{{ end }}

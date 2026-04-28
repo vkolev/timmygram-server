@@ -1,0 +1,73 @@
+{{ template "base" . }}
+
+{{ define "content" }}
+<section class="hero">
+    <div class="hero-content">
+        <p class="eyebrow">A parent-managed video space for children</p>
+
+        <h1>Share sweet little videos with your child in a safer, family-first way.</h1>
+
+        <p class="hero-text">
+            TimmyGram helps parents upload short videos that children can watch on their own devices
+            in a simple scrolling experience — without the noise of public social media.
+        </p>
+
+        <div class="hero-actions">
+            <a href="/register" class="button">Create parent account</a>
+            <a href="/about" class="button button-secondary">Learn more</a>
+        </div>
+    </div>
+
+    <div class="phone-preview" aria-label="TimmyGram video preview">
+        <div class="phone-frame">
+            <div class="video-card video-card-one">
+                <span class="play-icon">▶</span>
+                <p>Grandma says hi</p>
+            </div>
+            <div class="video-card video-card-two">
+                <span class="play-icon">▶</span>
+                <p>Birthday dance</p>
+            </div>
+            <div class="video-card video-card-three">
+                <span class="play-icon">▶</span>
+                <p>Story time</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="feature-section">
+    <div class="section-heading">
+        <p class="eyebrow">Designed for parents</p>
+        <h2>A calmer way to share videos</h2>
+    </div>
+
+    <div class="feature-grid">
+        <article class="feature-card">
+            <div class="feature-icon">🎥</div>
+            <h3>Upload short videos</h3>
+            <p>Add family-friendly clips that your child can enjoy from their own device.</p>
+        </article>
+
+        <article class="feature-card">
+            <div class="feature-icon">👨‍👩‍👧</div>
+            <h3>Parent controlled</h3>
+            <p>You decide what appears in your child’s feed, keeping the experience personal and safe.</p>
+        </article>
+
+        <article class="feature-card">
+            <div class="feature-icon">🌈</div>
+            <h3>Child friendly</h3>
+            <p>A simple scrolling experience made for little viewers, without public discovery feeds.</p>
+        </article>
+    </div>
+</section>
+
+<section class="cta-panel">
+    <div>
+        <p class="eyebrow">Start today</p>
+        <h2>Create a joyful private video feed for your child.</h2>
+    </div>
+    <a href="/register" class="button">Get started</a>
+</section>
+{{ end }}

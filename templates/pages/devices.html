@@ -1,0 +1,54 @@
+{{ template "dashboard-base" . }}
+
+{{ define "content" }}
+<div class="dashboard-content">
+    <div class="dashboard-welcome">
+        <p class="eyebrow">Parent dashboard</p>
+        <h1>Child devices</h1>
+        <p class="dashboard-subtitle">Pair your child's iPhone or iPad to receive your video feed.</p>
+    </div>
+
+    <section class="dashboard-section devices-qr-section">
+        <div class="qr-layout">
+            <img src="/devices/qr" class="qr-image" alt="Scan to connect a device">
+            <div class="qr-instructions">
+                <h2>Connect a child's device</h2>
+                <ol>
+                    <li>Open the TimmyGram app on the child's device</li>
+                    <li>Tap <strong>Scan QR code</strong></li>
+                    <li>Point the camera at the code on the left</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <h2>Connected devices</h2>
+        {{ if .devices }}
+        <ul class="device-list">
+            {{ range .devices }}
+            <li class="device-item">
+                <div class="device-icon">📱</div>
+                <div class="device-info">
+                    <p class="device-name">{{ .DeviceName }}</p>
+                    <p class="device-meta">
+                        {{ if .LastSeenAt }}
+                        Last seen {{ .LastSeenAt.Format "Jan 2, 2006 at 3:04 PM" }}
+                        {{ else }}
+                        Never seen
+                        {{ end }}
+                    </p>
+                </div>
+            </li>
+            {{ end }}
+        </ul>
+        {{ else }}
+        <div class="empty-state">
+            <div class="empty-icon">📱</div>
+            <h3>No devices connected yet</h3>
+            <p>Scan the QR code above with the TimmyGram app to pair a device.</p>
+        </div>
+        {{ end }}
+    </section>
+</div>
+{{ end }}

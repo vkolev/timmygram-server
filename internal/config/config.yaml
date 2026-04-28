@@ -1,0 +1,9 @@
+server:
+  port: 8080
+ffmpeg:
+  max_duration: 60
+  output_ratio: "9:16"
+db_path: "./timmygramm.db"
+jwt_secret: "your-strong-secret-key-here"
+storage:
+  path: "./videos"

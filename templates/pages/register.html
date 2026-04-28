@@ -1,0 +1,41 @@
+{{ template "base" . }}
+
+{{ define "content" }}
+<section class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <p class="eyebrow">Create account</p>
+            <h1>Start your TimmyGram family space</h1>
+            <p>Create a parent account to begin uploading videos for your child.</p>
+        </div>
+
+        {{ if .error }}
+        <p class="form-error">{{ .error }}</p>
+        {{ end }}
+
+        <form class="auth-form" method="post" action="/register">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username"
+                   placeholder="parentname" value="{{ .username }}" required>
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="new-password"
+                   placeholder="At least 6 characters" minlength="6" required>
+
+            <button type="submit" class="button full-width">Create account</button>
+        </form>
+
+        <p class="auth-switch">
+            Already have an account?
+            <a href="/login">Log in</a>
+        </p>
+    </div>
+
+    <aside class="auth-side-panel playful">
+        <h2>Made for tiny viewers and thoughtful parents.</h2>
+        <p>
+            Keep favorite family clips in one gentle, parent-managed place.
+        </p>
+    </aside>
+</section>
+{{ end }}
