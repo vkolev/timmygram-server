@@ -10,4 +10,4 @@ db_path: "./timmygramm.db"
 jwt_secret: "your-strong-secret-key-here"
 
 storage:
-  path: "/app/videos"
+  path: "./videos"

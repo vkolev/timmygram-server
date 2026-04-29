@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -79,10 +80,25 @@ func (c *DeviceController) HandlePing(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
+func deviceIDFromRequest(ctx *gin.Context) (string, bool) {
+	deviceID := strings.TrimSpace(ctx.GetHeader("X-Device-ID"))
+	if deviceID == "" {
+		deviceID = strings.TrimSpace(ctx.Query("device_id"))
+	}
+
+	return deviceID, deviceID != ""
+}
+
 func (c *DeviceController) GetFeed(ctx *gin.Context) {
 	userID := ctx.GetInt("user_id")
 
-	videos, err := c.deviceService.GetRandomFeed(userID, 5)
+	deviceID, ok := deviceIDFromRequest(ctx)
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "device_id is required."})
+		return
+	}
+
+	videos, err := c.deviceService.GetRandomFeed(userID, deviceID, 5)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch feed."})
 		return
@@ -110,7 +126,14 @@ func (c *DeviceController) GetFeed(ctx *gin.Context) {
 
 func (c *DeviceController) GetNext(ctx *gin.Context) {
 	userID := ctx.GetInt("user_id")
-	video, err := c.deviceService.GetRandomVideo(userID)
+
+	deviceID, ok := deviceIDFromRequest(ctx)
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "device_id is required."})
+		return
+	}
+
+	video, err := c.deviceService.GetRandomVideo(userID, deviceID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch video."})
 		return
