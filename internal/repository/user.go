@@ -10,6 +10,7 @@ type UserRepository interface {
 	Create(user *model.User) error
 	FindByUsername(username string) (*model.User, error)
 	FindByID(id int) (*model.User, error)
+	HasUsers() (bool, error)
 }
 
 type SQLiteUserRepository struct {
@@ -49,4 +50,10 @@ func (r *SQLiteUserRepository) FindByID(id int) (*model.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *SQLiteUserRepository) HasUsers() (bool, error) {
+	var count int
+	err := r.db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
+	return count > 0, err
 }

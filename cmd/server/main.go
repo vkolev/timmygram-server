@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-	"strings"
 	"timmygram/internal/config"
 	authcontroller "timmygram/internal/controller/auth"
 	devicecontroller "timmygram/internal/controller/device"
@@ -13,6 +11,7 @@ import (
 	authservice "timmygram/internal/service/auth"
 	deviceservice "timmygram/internal/service/device"
 	videoservice "timmygram/internal/service/video"
+	"timmygram/migrations"
 
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
@@ -23,7 +22,7 @@ func createRenderer() multitemplate.Renderer {
 	base := "templates/layouts/base.html"
 	dashboard := "templates/layouts/dashboard.html"
 
-	for _, p := range []string{"home", "about", "login", "register"} {
+	for _, p := range []string{"home", "about", "login", "setup"} {
 		r.AddFromFiles(p+".html", "templates/pages/"+p+".html", base)
 	}
 	for _, p := range []string{"dashboard", "upload", "devices"} {
@@ -41,20 +40,8 @@ func main() {
 	}
 
 	// Apply incremental migrations idempotently.
-	migrations, err := os.ReadFile("migrations/002_devices_update.sql")
-	if err == nil {
-		for _, stmt := range strings.Split(string(migrations), ";") {
-			stmt = strings.TrimSpace(stmt)
-			if stmt == "" {
-				continue
-			}
-			if _, execErr := db.Exec(stmt); execErr != nil {
-				// "duplicate column name" means the migration already ran — safe to ignore.
-				if !strings.Contains(execErr.Error(), "duplicate column") {
-					panic(execErr)
-				}
-			}
-		}
+	if err := migrations.Run(db, "migrations"); err != nil {
+		panic(err)
 	}
 
 	userRepo := repository.NewUserRepository(db)
@@ -65,7 +52,7 @@ func main() {
 	videoSvc := videoservice.NewVideoService(videoRepo, cfg.Storage.Path, cfg.FFmpeg.MaxDuration, cfg.FFmpeg.OutputRatio)
 	deviceSvc := deviceservice.NewDeviceService(deviceRepo, videoRepo, cfg.JWTSecret, cfg.Server.URL)
 
-	authCtrl := authcontroller.NewAuthController(authSvc, cfg.Server.URL)
+	authCtrl := authcontroller.NewAuthController(authSvc, cfg.Server.URL, cfg)
 	mainCtrl := maincontroller.NewMainController(cfg.Server.URL, videoSvc)
 	videoCtrl := videocontroller.NewVideoController(videoSvc, cfg.Storage.Path, cfg.Server.URL)
 	deviceCtrl := devicecontroller.NewDeviceController(deviceSvc, cfg.Server.URL)
@@ -76,6 +63,8 @@ func main() {
 	router.HTMLRender = createRenderer()
 
 	router.Use(middleware.SessionMiddleware(cfg.JWTSecret))
+	// Detect if first run and redirect to setup page.
+	router.Use(middleware.FirstRunMiddleware(userRepo))
 
 	public := router.Group("/")
 	{
@@ -83,9 +72,9 @@ func main() {
 		public.GET("/about", mainCtrl.About)
 		public.GET("/login", authCtrl.Login)
 		public.POST("/login", authCtrl.HandleLogin)
-		public.GET("/register", authCtrl.Register)
-		public.POST("/register", authCtrl.HandleRegister)
+		public.POST("/setup", authCtrl.HandleSetup)
 		public.POST("/logout", authCtrl.HandleLogout)
+		public.GET("/setup", authCtrl.Setup)
 	}
 
 	protected := router.Group("/")
