@@ -37,9 +37,11 @@ security and privacy.
 3. Run `go run main.go`
 4. The rest is the same as Docker
 
+
 ## TODOs
 
-- [ ] Better video feed - currently it selects a random video form the database
+- [x] Better video feed - currently it selects a random video form the database
+- [ ] Likes for videos
 - [ ] Add a way to delete/edit videos
 - [ ] Add a way to disable/enable access for a device
 - [ ] Eventually allow multiple parents to upload videos
