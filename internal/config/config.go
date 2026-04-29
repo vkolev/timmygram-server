@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"os"
+	"path"
 
 	"gopkg.in/yaml.v3"
 )
@@ -26,21 +28,41 @@ func Load() *Config {
 	cfg := Config{}
 	cfg.Server.Port = "8080"
 	cfg.Server.URL = "http://192.168.178.85:8080"
-	cfg.DBPath = "./timmygram.db"
+	cfg.DBPath = "./timmygramm.db"
 	cfg.JWTSecret = "your-strong-secret-key-here"
 	cfg.FFmpeg.MaxDuration = 60
 	cfg.FFmpeg.OutputRatio = "9:16"
 	cfg.Storage.Path = "./videos"
 
-	if data, err := os.ReadFile("config.yaml"); err == nil {
-		yaml.Unmarshal(data, &cfg)
+	fmt.Println("Config is loading DBPath is: ", cfg.DBPath)
+
+	configFile := os.Getenv("TIMMYGRAM_CONFIG_FILE")
+	if configFile != "" {
+		configFile = "config.yaml"
 	}
 
-	if port := os.Getenv("PORT"); port != "" {
+	if data, err := os.ReadFile("config.yaml"); err == nil {
+		err := yaml.Unmarshal(data, &cfg)
+		if err != nil {
+			return nil
+		}
+	}
+
+	if dbPath := os.Getenv("TIMMYGRAM_DB_PATH"); dbPath != "" {
+		cfg.DBPath = path.Join(dbPath, cfg.DBPath)
+	}
+
+	fmt.Println("Config is changing DBPath as: ", cfg.DBPath)
+
+	if port := os.Getenv("TIMMYGRAM_PORT"); port != "" {
 		cfg.Server.Port = port
 	}
 	if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret != "" {
 		cfg.JWTSecret = jwtSecret
 	}
+	if storagePath := os.Getenv("TIMMYGRAM_STORAGE_PATH"); storagePath != "" {
+		cfg.Storage.Path = storagePath
+	}
+
 	return &cfg
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"timmygram/internal/config"
 
 	"github.com/gin-gonic/gin"
 
@@ -16,10 +17,11 @@ const sessionMaxAge = 24 * 60 * 60
 type AuthController struct {
 	authService *service.AuthService
 	serverURL   string
+	cfg         *config.Config
 }
 
-func NewAuthController(authService *service.AuthService, serverURL string) *AuthController {
-	return &AuthController{authService: authService, serverURL: serverURL}
+func NewAuthController(authService *service.AuthService, serverURL string, cfg *config.Config) *AuthController {
+	return &AuthController{authService: authService, serverURL: serverURL, cfg: cfg}
 }
 
 func (c *AuthController) Login(ctx *gin.Context) {
@@ -30,18 +32,6 @@ func (c *AuthController) Login(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "login.html", gin.H{
 		"title":     "Log in to TimmyGram",
 		"page":      "login",
-		"serverURL": c.serverURL,
-	})
-}
-
-func (c *AuthController) Register(ctx *gin.Context) {
-	if isAuth, _ := ctx.Get("is_authenticated"); isAuth == true {
-		ctx.Redirect(http.StatusSeeOther, "/dashboard")
-		return
-	}
-	ctx.HTML(http.StatusOK, "register.html", gin.H{
-		"title":     "Create your TimmyGram account",
-		"page":      "register",
 		"serverURL": c.serverURL,
 	})
 }
@@ -76,17 +66,43 @@ func (c *AuthController) HandleLogin(ctx *gin.Context) {
 	ctx.Redirect(http.StatusSeeOther, "/dashboard")
 }
 
-func (c *AuthController) HandleRegister(ctx *gin.Context) {
+func (c *AuthController) Setup(ctx *gin.Context) {
+	ctx.HTML(http.StatusOK, "setup.html", gin.H{
+		"title":     "Setup — TimmyGram",
+		"page":      "setup",
+		"serverURL": c.serverURL,
+		"config": gin.H{
+			"db_path":           c.cfg.DBPath,
+			"storage_path":      c.cfg.Storage.Path,
+			"ffmpeg_duration":   c.cfg.FFmpeg.MaxDuration,
+			"ffmpeg_ratio":      c.cfg.FFmpeg.OutputRatio,
+			"jwt_secret_status": jwtSecretStatus(c.cfg.JWTSecret),
+		},
+	})
+}
+
+func jwtSecretStatus(secret string) bool {
+	return secret != ""
+}
+
+func (c *AuthController) HandleSetup(ctx *gin.Context) {
 	username := strings.TrimSpace(ctx.PostForm("username"))
 	password := ctx.PostForm("password")
 
 	renderErr := func(msg string) {
-		ctx.HTML(http.StatusUnprocessableEntity, "register.html", gin.H{
-			"title":     "Create your TimmyGram account",
-			"page":      "register",
+		ctx.HTML(http.StatusUnprocessableEntity, "setup.html", gin.H{
+			"title":     "Setup — TimmyGram",
+			"page":      "setup",
 			"serverURL": c.serverURL,
 			"error":     msg,
 			"username":  username,
+			"config": gin.H{
+				"db_path":           c.cfg.DBPath,
+				"storage_path":      c.cfg.Storage.Path,
+				"ffmpeg_duration":   c.cfg.FFmpeg.MaxDuration,
+				"ffmpeg_ratio":      c.cfg.FFmpeg.OutputRatio,
+				"jwt_secret_status": jwtSecretStatus(c.cfg.JWTSecret),
+			},
 		})
 	}
 

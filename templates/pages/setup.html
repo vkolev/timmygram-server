@@ -13,7 +13,7 @@
         <p class="form-error">{{ .error }}</p>
         {{ end }}
 
-        <form class="auth-form" method="post" action="/register">
+        <form class="auth-form" method="post" action="/setup">
             <label for="username">Username</label>
             <input id="username" name="username" type="text" autocomplete="username"
                    placeholder="parentname" value="{{ .username }}" required>
@@ -32,9 +32,36 @@
     </div>
 
     <aside class="auth-side-panel playful">
-        <h2>Made for tiny viewers and thoughtful parents.</h2>
+        <h2>It looks like you are just starting!</h2>
         <p>
-            Keep favorite family clips in one gentle, parent-managed place.
+            This, of course, it is great, but you need to create your parent account
+            to begin uploading videos for your child. Please check your configuration:
+        </p>
+        <p>
+            <strong>Curren Configuration:</strong>
+            <dl>
+            <dt>Server URL</dt>
+            <dd>{{ .serverURL }}</dd>
+
+            <dt>Database Path</dt>
+            <dd>{{ .config.db_path }}</dd>
+
+            <dt>Video Storage Path</dt>
+            <dd>{{ .config.storage_path }}</dd>
+
+            <dt>FFmpeg Max Duration</dt>
+            <dd>{{ .config.ffmpeg_duration }} seconds</dd>
+
+            <dt>FFmpeg Output Ratio</dt>
+            <dd>{{ .config.ffmpeg_ratio }}</dd>
+
+            <dt>JWT Secret</dt>
+            {{ if .config.jwt_secret_status }}
+                <dd><span style="color: forestgreen; font-weight: bold;">Set</span></dd>
+            {{ else }}
+                <dd><span style="color: red; font-weight: bold;">Not set</span></dd>
+            {{ end }}
+            </dl>
         </p>
     </aside>
 </section>
