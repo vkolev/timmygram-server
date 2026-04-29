@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"time"
+
 	"timmygram/internal/model"
 )
 
@@ -12,6 +13,7 @@ type VideoRepository interface {
 	FindByID(id int) (*model.Video, error)
 	FindByUserID(userID int) ([]*model.Video, error)
 	FindRandomByUserID(userID, limit int) ([]*model.Video, error)
+	GetRandomUnwatchedVideo(userID int, deviceID string) (*model.Video, error)
 	UpdateTranscoded(id, duration int, aspectRatio, thumbnail string) error
 	Delete(id int) error
 }
@@ -102,6 +104,163 @@ func (r *SQLiteVideoRepository) UpdateTranscoded(id, duration int, aspectRatio, 
 func (r *SQLiteVideoRepository) Delete(id int) error {
 	_, err := r.db.Exec(`DELETE FROM videos WHERE id = ?`, id)
 	return err
+}
+
+func (r *SQLiteVideoRepository) GetRandomUnwatchedVideo(userID int, deviceID string) (*model.Video, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	video, err := r.popNextQueuedVideo(tx, deviceID)
+	if err != nil {
+		if !errors.Is(err, model.ErrVideoNotFound) {
+			return nil, err
+		}
+
+		lastVideoID, _ := r.findLastWatchedVideoID(tx, deviceID)
+
+		if err := r.refillVideoQueue(tx, userID, deviceID, lastVideoID); err != nil {
+			return nil, err
+		}
+
+		video, err = r.popNextQueuedVideo(tx, deviceID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = tx.Exec(
+		`INSERT OR REPLACE INTO device_watched_videos (device_id, video_id, watched_at)
+		 VALUES (?, ?, CURRENT_TIMESTAMP)`,
+		userID,
+		video.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return video, nil
+}
+
+func (r *SQLiteVideoRepository) popNextQueuedVideo(tx *sql.Tx, deviceID string) (*model.Video, error) {
+	var videoID int
+
+	err := tx.QueryRow(
+		`SELECT video_id
+		 FROM device_video_queue
+		 WHERE device_id = ?
+		 ORDER BY position ASC
+		 LIMIT 1`,
+		deviceID,
+	).Scan(&videoID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, model.ErrVideoNotFound
+		}
+		return nil, err
+	}
+
+	if _, err := tx.Exec(
+		`DELETE FROM device_video_queue WHERE device_id = ? AND video_id = ?`,
+		deviceID,
+		videoID,
+	); err != nil {
+		return nil, err
+	}
+
+	return findVideoByIDInTx(tx, videoID)
+}
+
+func (r *SQLiteVideoRepository) refillVideoQueue(tx *sql.Tx, userID int, deviceID string, lastVideoID int) error {
+	if _, err := tx.Exec(`DELETE FROM device_video_queue WHERE device_id = ?`, deviceID); err != nil {
+		return err
+	}
+
+	rows, err := tx.Query(
+		`SELECT id
+		 FROM videos
+		 WHERE user_id = ?
+		   AND transcoded_at IS NOT NULL
+		 ORDER BY RANDOM()`,
+		userID,
+	)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var videoIDs []int
+	for rows.Next() {
+		var videoID int
+		if err := rows.Scan(&videoID); err != nil {
+			return err
+		}
+		videoIDs = append(videoIDs, videoID)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	if len(videoIDs) == 0 {
+		return model.ErrVideoNotFound
+	}
+
+	// Avoid showing the same video as the first item of the new cycle when possible.
+	if len(videoIDs) > 1 && lastVideoID != 0 && videoIDs[0] == lastVideoID {
+		videoIDs[0], videoIDs[1] = videoIDs[1], videoIDs[0]
+	}
+
+	stmt, err := tx.Prepare(
+		`INSERT INTO device_video_queue (device_id, video_id, position)
+		 VALUES (?, ?, ?)`,
+	)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for position, videoID := range videoIDs {
+		if _, err := stmt.Exec(deviceID, videoID, position); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func findVideoByIDInTx(tx *sql.Tx, videoID int) (*model.Video, error) {
+	row := tx.QueryRow(
+		`SELECT id, user_id, title, filename, duration, aspect_ratio, output_ratio,
+		        COALESCE(thumbnail, ''), is_public, created_at, transcoded_at
+		 FROM videos
+		 WHERE id = ?`,
+		videoID,
+	)
+
+	return scanVideo(row)
+}
+
+func (r *SQLiteVideoRepository) findLastWatchedVideoID(tx *sql.Tx, deviceID string) (int, error) {
+	var videoID int
+	err := tx.QueryRow(
+		`SELECT video_id
+		 FROM device_watched_videos
+		 WHERE device_id = ?
+		 ORDER BY watched_at DESC
+		 LIMIT 1`,
+		deviceID,
+	).Scan(&videoID)
+	if err != nil {
+		return 0, err
+	}
+
+	return videoID, nil
 }
 
 // scanner is satisfied by both *sql.Row and *sql.Rows.

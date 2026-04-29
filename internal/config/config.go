@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -34,8 +33,6 @@ func Load() *Config {
 	cfg.FFmpeg.OutputRatio = "9:16"
 	cfg.Storage.Path = "./videos"
 
-	fmt.Println("Config is loading DBPath is: ", cfg.DBPath)
-
 	configFile := os.Getenv("TIMMYGRAM_CONFIG_FILE")
 	if configFile != "" {
 		configFile = "config.yaml"
@@ -51,8 +48,6 @@ func Load() *Config {
 	if dbPath := os.Getenv("TIMMYGRAM_DB_PATH"); dbPath != "" {
 		cfg.DBPath = path.Join(dbPath, cfg.DBPath)
 	}
-
-	fmt.Println("Config is changing DBPath as: ", cfg.DBPath)
 
 	if port := os.Getenv("TIMMYGRAM_PORT"); port != "" {
 		cfg.Server.Port = port

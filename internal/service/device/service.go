@@ -54,14 +54,14 @@ func (s *DeviceService) GetDevices(userID int) ([]*model.Device, error) {
 	return s.deviceRepo.FindByUserID(userID)
 }
 
-func (s *DeviceService) GetRandomFeed(userID, limit int) ([]*model.Video, error) {
+func (s *DeviceService) GetRandomFeed(userID int, deviceID string, limit int) ([]*model.Video, error) {
 	return s.videoRepo.FindRandomByUserID(userID, limit)
 }
 
-func (s *DeviceService) GetRandomVideo(userId int) (*model.Video, error) {
-	result, err := s.videoRepo.FindRandomByUserID(userId, 1)
+func (s *DeviceService) GetRandomVideo(userId int, deviceID string) (*model.Video, error) {
+	result, err := s.videoRepo.GetRandomUnwatchedVideo(userId, deviceID)
 	if err != nil {
 		return nil, err
 	}
-	return result[0], nil
+	return result, nil
 }
