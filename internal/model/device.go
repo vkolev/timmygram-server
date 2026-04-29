@@ -15,6 +15,11 @@ type Device struct {
 	DeviceDescription sql.NullString `json:"device_description"`
 	CreatedAt         time.Time      `json:"created_at"`
 	LastSeenAt        *time.Time     `json:"last_seen_at"`
+	BlockedAt         *time.Time     `json:"blocked_at"`
+}
+
+func (d *Device) IsBlocked() bool {
+	return d.BlockedAt != nil
 }
 
 var ErrDeviceNotFound = errors.New("device not found")

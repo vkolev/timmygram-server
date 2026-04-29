@@ -90,17 +90,25 @@ func main() {
 		protected.POST("/videos/:id/delete", videoCtrl.DeleteVideo)
 		protected.GET("/devices", deviceCtrl.ShowDevicesPage)
 		protected.GET("/devices/qr", deviceCtrl.ServeQRCode)
+		protected.POST("/devices/:id/block", deviceCtrl.BlockDevice)
+		protected.POST("/devices/:id/unblock", deviceCtrl.UnblockDevice)
+		protected.POST("/devices/:id/delete", deviceCtrl.DeleteDevice)
 	}
 
 	api := router.Group("/api/v1")
 	api.Use(middleware.DeviceAuthMiddleware(cfg.JWTSecret))
 	{
 		api.POST("/devices/ping", deviceCtrl.HandlePing)
-		api.GET("/feed", deviceCtrl.GetFeed)
-		api.GET("/feed/:page", deviceCtrl.GetFeed)
-		api.GET("/next", deviceCtrl.GetNext)
-		api.GET("/videos/:id/stream", videoCtrl.APIStreamVideo)
-		api.GET("/videos/:id/thumbnail", videoCtrl.APIServeThumbnail)
+
+		activeDeviceAPI := api.Group("/")
+		activeDeviceAPI.Use(middleware.RequireActiveDevice(deviceRepo))
+		{
+			activeDeviceAPI.GET("/feed", deviceCtrl.GetFeed)
+			activeDeviceAPI.GET("/feed/:page", deviceCtrl.GetFeed)
+			activeDeviceAPI.GET("/next", deviceCtrl.GetNext)
+			activeDeviceAPI.GET("/videos/:id/stream", videoCtrl.APIStreamVideo)
+			activeDeviceAPI.GET("/videos/:id/thumbnail", videoCtrl.APIServeThumbnail)
+		}
 	}
 
 	if err := router.Run("0.0.0.0:" + cfg.Server.Port); err != nil {

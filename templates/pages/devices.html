@@ -23,14 +23,26 @@
     </section>
 
     <section class="dashboard-section">
-        <h2>Connected devices</h2>
+        <div class="dashboard-section-header">
+            <h2>Connected devices</h2>
+        </div>
+
         {{ if .devices }}
-        <ul class="device-list">
+        <div class="device-list" role="list">
             {{ range .devices }}
-            <li class="device-item">
+            <div class="device-item {{ if .IsBlocked }}device-item-blocked{{ end }}" role="listitem">
                 <div class="device-icon">📱</div>
+
                 <div class="device-info">
-                    <p class="device-name">{{ .DeviceName }}</p>
+                    <div class="device-title-row">
+                        <p class="device-name">{{ .DeviceName }}</p>
+                        {{ if .IsBlocked }}
+                        <span class="device-status device-status-blocked">Blocked</span>
+                        {{ else }}
+                        <span class="device-status device-status-active">Active</span>
+                        {{ end }}
+                    </div>
+
                     <p class="device-meta">
                         {{ if .LastSeenAt }}
                         Last seen {{ .LastSeenAt.Format "Jan 2, 2006 at 3:04 PM" }}
@@ -39,9 +51,29 @@
                         {{ end }}
                     </p>
                 </div>
-            </li>
+
+                <div class="device-actions">
+                    {{ if .IsBlocked }}
+                    <form method="post" action="/devices/{{ .ID }}/unblock">
+                        <button type="submit" class="device-action-button device-unblock-button">Unblock</button>
+                    </form>
+                    {{ else }}
+                    <form method="post" action="/devices/{{ .ID }}/block">
+                        <button type="submit" class="device-action-button device-block-button">Block</button>
+                    </form>
+                    {{ end }}
+
+                    <form
+                        method="post"
+                        action="/devices/{{ .ID }}/delete"
+                        onsubmit="return confirm('Remove this device permanently?');"
+                    >
+                        <button type="submit" class="device-action-button device-remove-button">Remove</button>
+                    </form>
+                </div>
+            </div>
             {{ end }}
-        </ul>
+        </div>
         {{ else }}
         <div class="empty-state">
             <div class="empty-icon">📱</div>
