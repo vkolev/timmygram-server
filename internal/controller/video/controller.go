@@ -96,6 +96,70 @@ func (c *VideoController) ServeThumbnail(ctx *gin.Context) {
 	ctx.File(path)
 }
 
+func (c *VideoController) UpdateVideo(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID := ctx.GetInt("user_id")
+	title := ctx.PostForm("title")
+
+	if err := c.videoService.UpdateTitle(id, userID, title); err != nil {
+		if errors.Is(err, model.ErrVideoNotFound) {
+			ctx.Status(http.StatusNotFound)
+		} else if errors.Is(err, model.ErrVideoForbidden) {
+			ctx.Status(http.StatusForbidden)
+		} else {
+			ctx.Status(http.StatusInternalServerError)
+		}
+		return
+	}
+
+	ctx.Redirect(http.StatusSeeOther, "/dashboard")
+}
+
+func (c *VideoController) DeleteVideo(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID := ctx.GetInt("user_id")
+	if err := c.videoService.DeleteVideo(id, userID); err != nil {
+		if errors.Is(err, model.ErrVideoNotFound) {
+			ctx.Status(http.StatusNotFound)
+		} else if errors.Is(err, model.ErrVideoForbidden) {
+			ctx.Status(http.StatusForbidden)
+		} else {
+			ctx.Status(http.StatusInternalServerError)
+		}
+		return
+	}
+
+	ctx.Redirect(http.StatusSeeOther, "/dashboard")
+}
+
+func (c *VideoController) VideoStatus(ctx *gin.Context) {
+	v, ok := c.getOwnedVideo(ctx)
+	if !ok {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"id":            v.ID,
+		"title":         v.Title,
+		"duration":      v.Duration,
+		"thumbnail":     v.Thumbnail,
+		"is_processing": v.IsProcessing(),
+		"transcoded_at": v.TranscodedAt,
+		"thumbnail_url": "/videos/" + strconv.Itoa(v.ID) + "/thumbnail",
+		"stream_url":    "/videos/" + strconv.Itoa(v.ID) + "/stream",
+	})
+}
+
 func (c *VideoController) APIStreamVideo(ctx *gin.Context) {
 	v, ok := c.getAPIVideo(ctx)
 	if !ok {

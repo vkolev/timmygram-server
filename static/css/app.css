@@ -248,6 +248,93 @@ button.button {
     background: linear-gradient(135deg, #3ddc97, #ffd166);
 }
 
+.video-card-body {
+    padding: 12px 14px 14px;
+    flex: 1;
+    display: grid;
+    gap: 8px;
+}
+
+.video-title {
+    margin: 0 0 4px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.video-edit-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+    align-items: center;
+}
+
+.video-title-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: white;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 800;
+    outline: none;
+}
+
+.video-title-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 122, 89, 0.14);
+}
+
+.video-icon-button {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: none;
+    transition:
+            background 0.16s,
+            color 0.16s,
+            border-color 0.16s,
+            transform 0.16s;
+}
+
+.video-icon-button:hover {
+    transform: translateY(-1px);
+}
+
+.video-save-button {
+    background: rgba(255, 122, 89, 0.1);
+    color: var(--primary-dark);
+}
+
+.video-save-button:hover {
+    background: rgba(255, 122, 89, 0.18);
+    border-color: rgba(255, 122, 89, 0.3);
+}
+
+.video-meta {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
 .feature-section,
 .values-section,
 .content-section,
@@ -741,6 +828,8 @@ button.button {
 .video-card-body {
     padding: 12px 14px;
     flex: 1;
+    display: grid;
+    gap: 10px;
 }
 
 .video-title {
@@ -750,6 +839,88 @@ button.button {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.video-edit-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.video-title-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: white;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 800;
+    outline: none;
+}
+
+.video-title-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 122, 89, 0.14);
+}
+
+.video-delete-form {
+    width: 100%;
+    margin: 4px 0 0;
+}
+
+button.video-delete-button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 14px;
+    margin: 0;
+    border: 0;
+    border-radius: 999px;
+    background-color: #dc2626 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(220, 38, 38, 0.18);
+    transition:
+            background-color 0.16s,
+            box-shadow 0.16s,
+            transform 0.16s;
+}
+
+button.video-delete-button:hover {
+    transform: translateY(-1px);
+    background-color: #b91c1c !important;
+    background-image: none !important;
+    box-shadow: 0 14px 28px rgba(220, 38, 38, 0.26);
+}
+
+button.video-delete-button:active {
+    transform: translateY(0);
+    background-color: #991b1b !important;
+    background-image: none !important;
+}
+
+button.video-delete-button:focus-visible {
+    outline: none;
+    box-shadow:
+            0 0 0 3px rgba(220, 38, 38, 0.18),
+            0 10px 22px rgba(220, 38, 38, 0.18);
 }
 
 .video-meta {
@@ -871,90 +1042,5 @@ button.button {
 
     .phone-frame {
         min-height: 480px;
-    }
-
-    .auth-side-panel {
-        min-height: 320px;
-    }
-}
-
-/* ── Devices page ───────────────────────────────────────────────────── */
-
-.devices-qr-section {
-    padding: 2rem;
-}
-
-.qr-layout {
-    display: flex;
-    align-items: flex-start;
-    gap: 2.5rem;
-}
-
-.qr-image {
-    width: 200px;
-    height: 200px;
-    border-radius: var(--radius-sm);
-    border: 2px solid var(--border);
-    flex-shrink: 0;
-    image-rendering: pixelated;
-}
-
-.qr-instructions h2 {
-    margin: 0 0 0.75rem;
-    font-size: 1.1rem;
-}
-
-.qr-instructions ol {
-    margin: 0;
-    padding-left: 1.25rem;
-    color: var(--muted);
-    line-height: 1.8;
-}
-
-.device-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.device-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-}
-
-.device-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.device-name {
-    margin: 0;
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.device-meta {
-    margin: 0.2rem 0 0;
-    font-size: 0.8rem;
-    color: var(--muted);
-}
-
-@media (max-width: 600px) {
-    .qr-layout {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .qr-instructions ol {
-        text-align: left;
     }
 }

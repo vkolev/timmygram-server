@@ -85,6 +85,9 @@ func main() {
 		protected.POST("/upload", videoCtrl.HandleUpload)
 		protected.GET("/videos/:id/stream", videoCtrl.StreamVideo)
 		protected.GET("/videos/:id/thumbnail", videoCtrl.ServeThumbnail)
+		protected.GET("/videos/:id/status", videoCtrl.VideoStatus)
+		protected.POST("/videos/:id", videoCtrl.UpdateVideo)
+		protected.POST("/videos/:id/delete", videoCtrl.DeleteVideo)
 		protected.GET("/devices", deviceCtrl.ShowDevicesPage)
 		protected.GET("/devices/qr", deviceCtrl.ServeQRCode)
 	}

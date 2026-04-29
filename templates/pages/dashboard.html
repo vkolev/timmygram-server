@@ -17,14 +17,14 @@
         {{ if .videos }}
         <div class="video-grid">
             {{ range .videos }}
-            <div class="video-card-item">
+            <div class="video-card-item" data-video-card data-video-id="{{ .ID }}" data-processing="{{ .IsProcessing }}">
                 {{ if .Thumbnail }}
                 <a href="/videos/{{ .ID }}/stream" class="video-thumb-link">
                     <img src="/videos/{{ .ID }}/thumbnail" alt="{{ .Title }}" class="video-thumb">
                     <span class="video-play-overlay">▶</span>
                 </a>
                 {{ else }}
-                <div class="video-thumb-placeholder">
+                <div class="video-thumb-placeholder" data-video-thumb-placeholder>
                     {{ if .IsProcessing }}
                     <span class="processing-badge">Processing…</span>
                     {{ else }}
@@ -33,10 +33,35 @@
                 </div>
                 {{ end }}
                 <div class="video-card-body">
-                    <p class="video-title">{{ if .Title }}{{ .Title }}{{ else }}<em>Untitled</em>{{ end }}</p>
+                    <form method="post" action="/videos/{{ .ID }}" class="video-edit-form">
+                        <input
+                            type="text"
+                            name="title"
+                            value="{{ .Title }}"
+                            placeholder="Untitled"
+                            class="video-title-input"
+                            aria-label="Video title"
+                        >
+                        <button type="submit" class="video-icon-button video-save-button" aria-label="Save video title" title="Save title">✓</button>
+                    </form>
+
                     {{ if not .IsProcessing }}
-                    <p class="video-meta">{{ .Duration }}s</p>
+                    <p class="video-meta" data-video-meta>{{ .Duration }}s</p>
+                    {{ else }}
+                    <p class="video-meta" data-video-meta>Processing…</p>
                     {{ end }}
+
+                    <form
+                        method="post"
+                        action="/videos/{{ .ID }}/delete"
+                        class="video-delete-form"
+                        onsubmit="return confirm('Delete this video permanently?');"
+                    >
+                        <button type="submit" class="video-delete-button" aria-label="Delete video">
+                            <span aria-hidden="true">🗑</span>
+                            <span>Delete</span>
+                        </button>
+                    </form>
                 </div>
             </div>
             {{ end }}

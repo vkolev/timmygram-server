@@ -16,6 +16,7 @@ type VideoRepository interface {
 	FindPageByUserID(userID, limit, offset int) ([]*model.Video, error)
 	GetRandomUnwatchedVideo(userID int, deviceID string) (*model.Video, error)
 	UpdateTranscoded(id, duration int, aspectRatio, thumbnail string) error
+	UpdateTitle(id int, title string) error
 	Delete(id int) error
 }
 
@@ -122,6 +123,11 @@ func (r *SQLiteVideoRepository) UpdateTranscoded(id, duration int, aspectRatio, 
 		 WHERE id = ?`,
 		duration, aspectRatio, thumbnail, id,
 	)
+	return err
+}
+
+func (r *SQLiteVideoRepository) UpdateTitle(id int, title string) error {
+	_, err := r.db.Exec(`UPDATE videos SET title = ? WHERE id = ?`, title, id)
 	return err
 }
 
