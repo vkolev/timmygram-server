@@ -1,0 +1,1 @@
+ALTER TABLE devices ADD COLUMN blocked_at DATETIME;

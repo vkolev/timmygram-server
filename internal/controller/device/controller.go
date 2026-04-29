@@ -60,6 +60,54 @@ func (c *DeviceController) ServeQRCode(ctx *gin.Context) {
 	ctx.Data(http.StatusOK, "image/png", pngBytes)
 }
 
+func (c *DeviceController) BlockDevice(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID := ctx.GetInt("user_id")
+	if err := c.deviceService.BlockDevice(id, userID); err != nil {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.Redirect(http.StatusSeeOther, "/devices")
+}
+
+func (c *DeviceController) UnblockDevice(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID := ctx.GetInt("user_id")
+	if err := c.deviceService.UnblockDevice(id, userID); err != nil {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.Redirect(http.StatusSeeOther, "/devices")
+}
+
+func (c *DeviceController) DeleteDevice(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID := ctx.GetInt("user_id")
+	if err := c.deviceService.DeleteDevice(id, userID); err != nil {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.Redirect(http.StatusSeeOther, "/devices")
+}
+
 type pingRequest struct {
 	DeviceID          string `json:"device_id" binding:"required"`
 	DeviceName        string `json:"device_name" binding:"required"`
@@ -94,12 +142,8 @@ func deviceIDFromRequest(ctx *gin.Context) (string, bool) {
 
 func (c *DeviceController) GetFeed(ctx *gin.Context) {
 	userID := ctx.GetInt("user_id")
+	deviceID := ctx.GetString("device_id")
 
-	deviceID, ok := deviceIDFromRequest(ctx)
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "device_id is required."})
-		return
-	}
 	page := 1
 	pageParam := strings.TrimSpace(ctx.Param("page"))
 	if pageParam != "" {
@@ -142,12 +186,7 @@ func (c *DeviceController) GetFeed(ctx *gin.Context) {
 
 func (c *DeviceController) GetNext(ctx *gin.Context) {
 	userID := ctx.GetInt("user_id")
-
-	deviceID, ok := deviceIDFromRequest(ctx)
-	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "device_id is required."})
-		return
-	}
+	deviceID := ctx.GetString("device_id")
 
 	video, err := c.deviceService.GetRandomVideo(userID, deviceID)
 	if err != nil {

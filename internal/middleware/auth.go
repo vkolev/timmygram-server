@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"timmygram/internal/model"
+	"timmygram/internal/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -118,6 +120,42 @@ func DeviceAuthMiddleware(jwtSecret string) gin.HandlerFunc {
 		}
 
 		ctx.Set("user_id", int(userID))
+		ctx.Next()
+	}
+}
+
+func RequireActiveDevice(deviceRepo repository.DeviceRepository) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userID := ctx.GetInt("user_id")
+
+		deviceID := strings.TrimSpace(ctx.GetHeader("X-Device-ID"))
+		if deviceID == "" {
+			deviceID = strings.TrimSpace(ctx.Query("device_id"))
+		}
+
+		if deviceID == "" {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "device_id is required."})
+			return
+		}
+
+		device, err := deviceRepo.FindByDeviceID(userID, deviceID)
+		if err != nil {
+			if errors.Is(err, model.ErrDeviceNotFound) {
+				ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Device is not registered or has been removed."})
+				return
+			}
+
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify device."})
+			return
+		}
+
+		if device.IsBlocked() {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Device is blocked."})
+			return
+		}
+
+		ctx.Set("device_id", device.DeviceID)
+		ctx.Set("device", device)
 		ctx.Next()
 	}
 }

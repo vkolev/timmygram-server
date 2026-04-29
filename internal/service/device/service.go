@@ -54,6 +54,18 @@ func (s *DeviceService) GetDevices(userID int) ([]*model.Device, error) {
 	return s.deviceRepo.FindByUserID(userID)
 }
 
+func (s *DeviceService) BlockDevice(id, userID int) error {
+	return s.deviceRepo.Block(id, userID)
+}
+
+func (s *DeviceService) UnblockDevice(id, userID int) error {
+	return s.deviceRepo.Unblock(id, userID)
+}
+
+func (s *DeviceService) DeleteDevice(id, userID int) error {
+	return s.deviceRepo.Delete(id, userID)
+}
+
 func (s *DeviceService) GetRandomFeed(userID int, deviceID string, limit int) ([]*model.Video, error) {
 	return s.videoRepo.FindRandomByUserID(userID, limit)
 }
