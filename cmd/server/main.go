@@ -55,7 +55,7 @@ func main() {
 	authCtrl := authcontroller.NewAuthController(authSvc, cfg.Server.URL, cfg)
 	mainCtrl := maincontroller.NewMainController(cfg.Server.URL, videoSvc)
 	videoCtrl := videocontroller.NewVideoController(videoSvc, cfg.Storage.Path, cfg.Server.URL)
-	deviceCtrl := devicecontroller.NewDeviceController(deviceSvc, cfg.Server.URL)
+	deviceCtrl := devicecontroller.NewDeviceController(deviceSvc, cfg.Server.URL, cfg)
 
 	router := gin.Default()
 	router.MaxMultipartMemory = 8 << 20 // 8 MB in memory, rest spills to disk
@@ -94,6 +94,7 @@ func main() {
 	{
 		api.POST("/devices/ping", deviceCtrl.HandlePing)
 		api.GET("/feed", deviceCtrl.GetFeed)
+		api.GET("/feed/:page", deviceCtrl.GetFeed)
 		api.GET("/next", deviceCtrl.GetNext)
 		api.GET("/videos/:id/stream", videoCtrl.APIStreamVideo)
 		api.GET("/videos/:id/thumbnail", videoCtrl.APIServeThumbnail)

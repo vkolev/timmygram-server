@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path"
+	"strconv"
 
 	"gopkg.in/yaml.v3"
 )
@@ -18,7 +19,8 @@ type Config struct {
 		MaxDuration int    `yaml:"max_duration"`
 		OutputRatio string `yaml:"output_ratio"`
 	} `yaml:"ffmpeg"`
-	Storage struct {
+	FeedPageSize int `yaml:"feed_page_size"`
+	Storage      struct {
 		Path string `yaml:"path"`
 	} `yaml:"storage"`
 }
@@ -31,6 +33,7 @@ func Load() *Config {
 	cfg.JWTSecret = "your-strong-secret-key-here"
 	cfg.FFmpeg.MaxDuration = 60
 	cfg.FFmpeg.OutputRatio = "9:16"
+	cfg.FeedPageSize = 5
 	cfg.Storage.Path = "./videos"
 
 	configFile := os.Getenv("TIMMYGRAM_CONFIG_FILE")
@@ -54,6 +57,14 @@ func Load() *Config {
 	}
 	if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret != "" {
 		cfg.JWTSecret = jwtSecret
+	}
+	if pageSize := os.Getenv("TIMMYGRAM_FEED_PAGE_SIZE"); pageSize != "" {
+		perPage, err := strconv.Atoi(pageSize)
+		if err != nil {
+			cfg.FeedPageSize = 5
+		} else {
+			cfg.FeedPageSize = perPage
+		}
 	}
 	if storagePath := os.Getenv("TIMMYGRAM_STORAGE_PATH"); storagePath != "" {
 		cfg.Storage.Path = storagePath
