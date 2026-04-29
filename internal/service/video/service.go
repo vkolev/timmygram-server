@@ -182,6 +182,34 @@ func (s *VideoService) GetVideo(id, userID int) (*model.Video, error) {
 	return v, nil
 }
 
+func (s *VideoService) UpdateTitle(id, userID int, title string) error {
+	v, err := s.GetVideo(id, userID)
+	if err != nil {
+		return err
+	}
+
+	return s.videoRepo.UpdateTitle(v.ID, strings.TrimSpace(title))
+}
+
+func (s *VideoService) DeleteVideo(id, userID int) error {
+	v, err := s.GetVideo(id, userID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.videoRepo.Delete(v.ID); err != nil {
+		return err
+	}
+
+	_ = os.Remove(filepath.Join(s.storagePath, "raw", v.Filename+".mp4"))
+	_ = os.Remove(filepath.Join(s.storagePath, "transcoded", v.Filename+".mp4"))
+	if v.Thumbnail != "" {
+		_ = os.Remove(filepath.Join(s.storagePath, "thumbnails", v.Thumbnail))
+	}
+
+	return nil
+}
+
 // ── FFmpeg helpers ─────────────────────────────────────────────────────────────
 
 type ffprobeOutput struct {
