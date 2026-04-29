@@ -77,14 +77,11 @@ main {
 .brand-mark {
     width: 42px;
     height: 42px;
-    display: grid;
-    place-items: center;
+    display: block;
     border-radius: 14px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white;
-    box-shadow: 0 12px 30px rgba(255, 122, 89, 0.28);
-    font-size: 0.9rem;
-    letter-spacing: -0.02em;
+    object-fit: contain;
+    background: transparent;
+    box-shadow: 0 12px 30px rgba(255, 122, 89, 0.18);
 }
 
 .nav-links {
@@ -609,6 +606,24 @@ button.button {
     display: flex;
     align-items: center;
     gap: 24px;
+}
+
+footer.dashboard-footer {
+    width: min(1200px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 28px 0 34px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    text-align: center;
+}
+
+.dashboard-footer p {
+    text-align: center;
+    margin: 0;
+}
+
+.dashboard-footer p + p {
+    margin-top: 6px;
 }
 
 .dashboard-nav-links {

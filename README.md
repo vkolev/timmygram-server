@@ -41,9 +41,9 @@ security and privacy.
 ## TODOs
 
 - [x] Better video feed - currently it selects a random video form the database
-- [ ] Likes for videos
-- [ ] Add a way to delete/edit videos
-- [ ] Add a way to disable/enable access for a device
+- [x] Likes for videos
+- [x] Add a way to delete/edit videos
+- [x] Add a way to disable/enable access for a device
 - [ ] Eventually allow multiple parents to upload videos
 
 ## License: MIT License

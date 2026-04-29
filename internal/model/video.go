@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	ErrVideoNotFound  = errors.New("video not found")
-	ErrVideoForbidden = errors.New("forbidden")
+	ErrVideoNotFound     = errors.New("video not found")
+	ErrVideoForbidden    = errors.New("forbidden")
+	ErrVideoAlreadyLiked = errors.New("video already liked today")
 )
 
 type Video struct {
@@ -20,6 +21,7 @@ type Video struct {
 	OutputRatio  string     `json:"output_ratio"`
 	Thumbnail    string     `json:"thumbnail"`
 	IsPublic     bool       `json:"is_public"`
+	LikesCount   int        `json:"likes_count"`
 	CreatedAt    time.Time  `json:"created_at"`
 	TranscodedAt *time.Time `json:"transcoded_at"`
 }

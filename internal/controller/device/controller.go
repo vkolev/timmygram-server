@@ -166,6 +166,7 @@ func (c *DeviceController) GetFeed(ctx *gin.Context) {
 		Title        string `json:"title"`
 		ThumbnailURL string `json:"thumbnail_url"`
 		StreamURL    string `json:"stream_url"`
+		LikesCount   int    `json:"likes_count"`
 	}
 
 	items := make([]videoItem, 0, len(videos))
@@ -175,8 +176,10 @@ func (c *DeviceController) GetFeed(ctx *gin.Context) {
 			Title:        v.Title,
 			ThumbnailURL: fmt.Sprintf("%s/api/v1/videos/%d/thumbnail", c.serverURL, v.ID),
 			StreamURL:    fmt.Sprintf("%s/api/v1/videos/%d/stream", c.serverURL, v.ID),
+			LikesCount:   v.LikesCount,
 		})
 	}
+
 	var nextPage *string
 	if hasNextPage {
 		nextPage = new(fmt.Sprintf("%s/api/v1/feed/%d", c.serverURL, page+1))
@@ -199,6 +202,7 @@ func (c *DeviceController) GetNext(ctx *gin.Context) {
 		Title        string `json:"title"`
 		ThumbnailURL string `json:"thumbnail_url"`
 		StreamURL    string `json:"stream_url"`
+		LikesCount   int    `json:"likes_count"`
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"video": videoItem{
@@ -206,5 +210,6 @@ func (c *DeviceController) GetNext(ctx *gin.Context) {
 		Title:        video.Title,
 		ThumbnailURL: fmt.Sprintf("%s/api/v1/videos/%d/thumbnail", c.serverURL, video.ID),
 		StreamURL:    fmt.Sprintf("%s/api/v1/videos/%d/stream", c.serverURL, video.ID),
+		LikesCount:   video.LikesCount,
 	}})
 }

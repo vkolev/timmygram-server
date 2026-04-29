@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"timmygram/internal/model"
@@ -15,6 +16,8 @@ type VideoRepository interface {
 	FindRandomByUserID(userID, limit int) ([]*model.Video, error)
 	FindPageByUserID(userID, limit, offset int) ([]*model.Video, error)
 	GetRandomUnwatchedVideo(userID int, deviceID string) (*model.Video, error)
+	LikeVideo(videoID int, deviceID string) (int, error)
+	CountLikes(videoID int) (int, error)
 	UpdateTranscoded(id, duration int, aspectRatio, thumbnail string) error
 	UpdateTitle(id int, title string) error
 	Delete(id int) error
@@ -42,19 +45,31 @@ func (r *SQLiteVideoRepository) Create(v *model.Video) (int64, error) {
 
 func (r *SQLiteVideoRepository) FindByID(id int) (*model.Video, error) {
 	row := r.db.QueryRow(
-		`SELECT id, user_id, title, filename, duration, aspect_ratio, output_ratio,
-		        COALESCE(thumbnail, ''), is_public, created_at, transcoded_at
-		 FROM videos WHERE id = ?`, id,
+		`SELECT v.id, v.user_id, v.title, v.filename, v.duration, v.aspect_ratio, v.output_ratio,
+		        COALESCE(v.thumbnail, ''), v.is_public,
+		        COUNT(vl.id) AS likes_count,
+		        v.created_at, v.transcoded_at
+		 FROM videos v
+		 LEFT JOIN video_likes vl ON vl.video_id = v.id
+		 WHERE v.id = ?
+		 GROUP BY v.id`, id,
 	)
 	return scanVideo(row)
 }
 
 func (r *SQLiteVideoRepository) FindByUserID(userID int) ([]*model.Video, error) {
 	rows, err := r.db.Query(
-		`SELECT id, user_id, title, filename, duration, aspect_ratio, output_ratio,
-		        COALESCE(thumbnail, ''), is_public, created_at, transcoded_at
-		 FROM videos WHERE user_id = ? ORDER BY created_at DESC`, userID,
+		`SELECT v.id, v.user_id, v.title, v.filename, v.duration, v.aspect_ratio, v.output_ratio,
+		        COALESCE(v.thumbnail, ''), v.is_public,
+		        COUNT(vl.id) AS likes_count,
+		        v.created_at, v.transcoded_at
+		 FROM videos v
+		 LEFT JOIN video_likes vl ON vl.video_id = v.id
+		 WHERE v.user_id = ?
+		 GROUP BY v.id
+		 ORDER BY v.created_at DESC`, userID,
 	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -73,11 +88,18 @@ func (r *SQLiteVideoRepository) FindByUserID(userID int) ([]*model.Video, error)
 
 func (r *SQLiteVideoRepository) FindPageByUserID(userID, limit, offset int) ([]*model.Video, error) {
 	rows, err := r.db.Query(
-		`SELECT id, user_id, title, filename, duration, aspect_ratio, output_ratio,
-		        COALESCE(thumbnail, ''), is_public, created_at, transcoded_at
-		 FROM videos WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+		`SELECT v.id, v.user_id, v.title, v.filename, v.duration, v.aspect_ratio, v.output_ratio,
+		        COALESCE(v.thumbnail, ''), v.is_public,
+		        COUNT(vl.id) AS likes_count,
+		        v.created_at, v.transcoded_at
+		 FROM videos v
+		 LEFT JOIN video_likes vl ON vl.video_id = v.id
+		 WHERE v.user_id = ?
+		 GROUP BY v.id
+		 ORDER BY v.created_at DESC LIMIT ? OFFSET ?`,
 		userID, limit, offset,
 	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +118,17 @@ func (r *SQLiteVideoRepository) FindPageByUserID(userID, limit, offset int) ([]*
 
 func (r *SQLiteVideoRepository) FindRandomByUserID(userID, limit int) ([]*model.Video, error) {
 	rows, err := r.db.Query(
-		`SELECT id, user_id, title, filename, duration, aspect_ratio, output_ratio,
-		        COALESCE(thumbnail, ''), is_public, created_at, transcoded_at
-		 FROM videos WHERE user_id = ? AND transcoded_at IS NOT NULL
+		`SELECT v.id, v.user_id, v.title, v.filename, v.duration, v.aspect_ratio, v.output_ratio,
+		        COALESCE(v.thumbnail, ''), v.is_public,
+		        COUNT(vl.id) AS likes_count,
+		        v.created_at, v.transcoded_at
+		 FROM videos v
+		 LEFT JOIN video_likes vl ON vl.video_id = v.id
+		 WHERE v.user_id = ? AND v.transcoded_at IS NOT NULL
+		 GROUP BY v.id
 		 ORDER BY RANDOM() LIMIT ?`, userID, limit,
 	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -266,10 +294,14 @@ func (r *SQLiteVideoRepository) refillVideoQueue(tx *sql.Tx, userID int, deviceI
 
 func findVideoByIDInTx(tx *sql.Tx, videoID int) (*model.Video, error) {
 	row := tx.QueryRow(
-		`SELECT id, user_id, title, filename, duration, aspect_ratio, output_ratio,
-		        COALESCE(thumbnail, ''), is_public, created_at, transcoded_at
-		 FROM videos
-		 WHERE id = ?`,
+		`SELECT v.id, v.user_id, v.title, v.filename, v.duration, v.aspect_ratio, v.output_ratio,
+		        COALESCE(v.thumbnail, ''), v.is_public,
+		        COUNT(vl.id) AS likes_count,
+		        v.created_at, v.transcoded_at
+		 FROM videos v
+		 LEFT JOIN video_likes vl ON vl.video_id = v.id
+		 WHERE v.id = ?
+		 GROUP BY v.id`,
 		videoID,
 	)
 
@@ -293,6 +325,32 @@ func (r *SQLiteVideoRepository) findLastWatchedVideoID(tx *sql.Tx, deviceID stri
 	return videoID, nil
 }
 
+func (r *SQLiteVideoRepository) LikeVideo(videoID int, deviceID string) (int, error) {
+	_, err := r.db.Exec(
+		`INSERT INTO video_likes (video_id, device_id, liked_on)
+		 VALUES (?, ?, CURRENT_DATE)`,
+		videoID,
+		deviceID,
+	)
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "unique constraint") {
+			return r.CountLikes(videoID)
+		}
+		return 0, err
+	}
+
+	return r.CountLikes(videoID)
+}
+
+func (r *SQLiteVideoRepository) CountLikes(videoID int) (int, error) {
+	var count int
+	err := r.db.QueryRow(
+		`SELECT COUNT(*) FROM video_likes WHERE video_id = ?`,
+		videoID,
+	).Scan(&count)
+	return count, err
+}
+
 // scanner is satisfied by both *sql.Row and *sql.Rows.
 type scanner interface {
 	Scan(dest ...any) error
@@ -306,6 +364,7 @@ func scanVideo(s scanner) (*model.Video, error) {
 	err := s.Scan(
 		&v.ID, &v.UserID, &v.Title, &v.Filename, &v.Duration,
 		&v.AspectRatio, &v.OutputRatio, &v.Thumbnail, &v.IsPublic,
+		&v.LikesCount,
 		&createdAtStr, &transcodedAt,
 	)
 	if err != nil {

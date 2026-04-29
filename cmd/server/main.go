@@ -1,6 +1,7 @@
 package main
 
 import (
+	version "timmygram/internal"
 	"timmygram/internal/config"
 	authcontroller "timmygram/internal/controller/auth"
 	devicecontroller "timmygram/internal/controller/device"
@@ -15,9 +16,22 @@ import (
 
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/render"
 )
 
-func createRenderer() multitemplate.Renderer {
+type appRenderer struct {
+	render multitemplate.Renderer
+}
+
+func (r appRenderer) Instance(name string, data any) render.Render {
+	if h, ok := data.(gin.H); ok {
+		h["AppVersion"] = version.Version
+	}
+
+	return r.render.Instance(name, data)
+}
+
+func createRenderer() render.HTMLRender {
 	r := multitemplate.NewRenderer()
 	base := "templates/layouts/base.html"
 	dashboard := "templates/layouts/dashboard.html"
@@ -28,7 +42,7 @@ func createRenderer() multitemplate.Renderer {
 	for _, p := range []string{"dashboard", "upload", "devices"} {
 		r.AddFromFiles(p+".html", "templates/pages/"+p+".html", dashboard)
 	}
-	return r
+	return appRenderer{render: r}
 }
 
 func main() {
@@ -60,6 +74,7 @@ func main() {
 	router := gin.Default()
 	router.MaxMultipartMemory = 8 << 20 // 8 MB in memory, rest spills to disk
 	router.Static("/static", "./static")
+	router.StaticFile("/favicon.ico", "./static/favicon/favicon.ico")
 	router.HTMLRender = createRenderer()
 
 	router.Use(middleware.SessionMiddleware(cfg.JWTSecret))
@@ -108,6 +123,8 @@ func main() {
 			activeDeviceAPI.GET("/next", deviceCtrl.GetNext)
 			activeDeviceAPI.GET("/videos/:id/stream", videoCtrl.APIStreamVideo)
 			activeDeviceAPI.GET("/videos/:id/thumbnail", videoCtrl.APIServeThumbnail)
+			activeDeviceAPI.POST("/videos/:id/likes", videoCtrl.LikeVideo)
+			activeDeviceAPI.GET("/videos/:id/likes", videoCtrl.GetVideoLikes)
 		}
 	}
 

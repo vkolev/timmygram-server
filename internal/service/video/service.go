@@ -191,6 +191,24 @@ func (s *VideoService) UpdateTitle(id, userID int, title string) error {
 	return s.videoRepo.UpdateTitle(v.ID, strings.TrimSpace(title))
 }
 
+func (s *VideoService) LikeVideo(id, userID int, deviceID string) (int, error) {
+	v, err := s.GetVideo(id, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return s.videoRepo.LikeVideo(v.ID, strings.TrimSpace(deviceID))
+}
+
+func (s *VideoService) CountLikes(id, userID int) (int, error) {
+	v, err := s.GetVideo(id, userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return s.videoRepo.CountLikes(v.ID)
+}
+
 func (s *VideoService) DeleteVideo(id, userID int) error {
 	v, err := s.GetVideo(id, userID)
 	if err != nil {

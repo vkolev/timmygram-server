@@ -6,14 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ .title }}</title>
     <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="icon" href="/static/favicon/favicon.ico" sizes="any">
+    <link rel="icon" href="/static/favicon/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/static/favicon/apple-touch-icon.png">
+    <link rel="manifest" href="/static/favicon/site.webmanifest">
 </head>
 <body class="dashboard-body">
 
 <header class="dashboard-header">
     <div class="dashboard-header-inner">
-        <a href="/dashboard" class="brand">
-            <span class="brand-mark">TG</span>
-            <span class="brand-name">TimmyGram</span>
+        <a class="brand" href="/dashboard">
+            <img class="brand-mark" src="/static/favicon/favicon.svg" alt="Timmygram logo">
+            <span>Timmygram</span>
         </a>
 
         <nav class="dashboard-nav-links">
@@ -33,6 +37,11 @@
 <main class="dashboard-main">
     {{ template "content" . }}
 </main>
+
+<footer class="dashboard-footer">
+    <p>Built for families. Made for safe little moments.</p>
+    <p class="muted">&copy; TimmyGram version: {{ .AppVersion }}</p>
+</footer>
 
 <script src="/static/js/dashboard.js" defer></script>
 

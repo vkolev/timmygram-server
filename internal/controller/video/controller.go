@@ -142,6 +142,55 @@ func (c *VideoController) DeleteVideo(ctx *gin.Context) {
 	ctx.Redirect(http.StatusSeeOther, "/dashboard")
 }
 
+func (c *VideoController) LikeVideo(ctx *gin.Context) {
+	v, ok := c.getAPIVideo(ctx)
+	if !ok {
+		return
+	}
+
+	deviceID := ctx.GetString("device_id")
+	if deviceID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "device_id is required."})
+		return
+	}
+
+	likesCount, err := c.videoService.LikeVideo(v.ID, ctx.GetInt("user_id"), deviceID)
+	if err != nil {
+		if errors.Is(err, model.ErrVideoNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Video not found."})
+		} else if errors.Is(err, model.ErrVideoForbidden) {
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "Access denied."})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video."})
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"ok":          true,
+		"video_id":    v.ID,
+		"likes_count": likesCount,
+	})
+}
+
+func (c *VideoController) GetVideoLikes(ctx *gin.Context) {
+	v, ok := c.getAPIVideo(ctx)
+	if !ok {
+		return
+	}
+
+	likesCount, err := c.videoService.CountLikes(v.ID, ctx.GetInt("user_id"))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count likes."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"video_id":    v.ID,
+		"likes_count": likesCount,
+	})
+}
+
 func (c *VideoController) VideoStatus(ctx *gin.Context) {
 	v, ok := c.getOwnedVideo(ctx)
 	if !ok {
@@ -154,6 +203,7 @@ func (c *VideoController) VideoStatus(ctx *gin.Context) {
 		"duration":      v.Duration,
 		"thumbnail":     v.Thumbnail,
 		"is_processing": v.IsProcessing(),
+		"likes_count":   v.LikesCount,
 		"transcoded_at": v.TranscodedAt,
 		"thumbnail_url": "/videos/" + strconv.Itoa(v.ID) + "/thumbnail",
 		"stream_url":    "/videos/" + strconv.Itoa(v.ID) + "/stream",
