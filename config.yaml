@@ -9,5 +9,7 @@ ffmpeg:
 db_path: "./timmygramm.db"
 jwt_secret: "your-strong-secret-key-here"
 
+feed_page_size: 5
+
 storage:
   path: "./videos"

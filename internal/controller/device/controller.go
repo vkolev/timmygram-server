@@ -3,7 +3,9 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
+	"timmygram/internal/config"
 
 	"github.com/gin-gonic/gin"
 
@@ -14,10 +16,11 @@ import (
 type DeviceController struct {
 	deviceService *deviceservice.DeviceService
 	serverURL     string
+	cfg           *config.Config
 }
 
-func NewDeviceController(svc *deviceservice.DeviceService, serverURL string) *DeviceController {
-	return &DeviceController{deviceService: svc, serverURL: serverURL}
+func NewDeviceController(svc *deviceservice.DeviceService, serverURL string, cfg *config.Config) *DeviceController {
+	return &DeviceController{deviceService: svc, serverURL: serverURL, cfg: cfg}
 }
 
 func (c *DeviceController) ShowDevicesPage(ctx *gin.Context) {
@@ -97,8 +100,18 @@ func (c *DeviceController) GetFeed(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "device_id is required."})
 		return
 	}
+	page := 1
+	pageParam := strings.TrimSpace(ctx.Param("page"))
+	if pageParam != "" {
+		parsedPage, err := strconv.Atoi(pageParam)
+		if err != nil || parsedPage < 1 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number."})
+			return
+		}
+		page = parsedPage
+	}
 
-	videos, err := c.deviceService.GetRandomFeed(userID, deviceID, 5)
+	videos, hasNextPage, err := c.deviceService.GetFeed(userID, deviceID, page, c.cfg.FeedPageSize)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch feed."})
 		return
@@ -120,8 +133,11 @@ func (c *DeviceController) GetFeed(ctx *gin.Context) {
 			StreamURL:    fmt.Sprintf("%s/api/v1/videos/%d/stream", c.serverURL, v.ID),
 		})
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{"videos": items})
+	var nextPage *string
+	if hasNextPage {
+		nextPage = new(fmt.Sprintf("%s/api/v1/feed/%d", c.serverURL, page+1))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"videos": items, "page": page, "next_page": nextPage})
 }
 
 func (c *DeviceController) GetNext(ctx *gin.Context) {

@@ -13,6 +13,7 @@ type VideoRepository interface {
 	FindByID(id int) (*model.Video, error)
 	FindByUserID(userID int) ([]*model.Video, error)
 	FindRandomByUserID(userID, limit int) ([]*model.Video, error)
+	FindPageByUserID(userID, limit, offset int) ([]*model.Video, error)
 	GetRandomUnwatchedVideo(userID int, deviceID string) (*model.Video, error)
 	UpdateTranscoded(id, duration int, aspectRatio, thumbnail string) error
 	Delete(id int) error
@@ -52,6 +53,29 @@ func (r *SQLiteVideoRepository) FindByUserID(userID int) ([]*model.Video, error)
 		`SELECT id, user_id, title, filename, duration, aspect_ratio, output_ratio,
 		        COALESCE(thumbnail, ''), is_public, created_at, transcoded_at
 		 FROM videos WHERE user_id = ? ORDER BY created_at DESC`, userID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var videos []*model.Video
+	for rows.Next() {
+		v, err := scanVideo(rows)
+		if err != nil {
+			return nil, err
+		}
+		videos = append(videos, v)
+	}
+	return videos, rows.Err()
+}
+
+func (r *SQLiteVideoRepository) FindPageByUserID(userID, limit, offset int) ([]*model.Video, error) {
+	rows, err := r.db.Query(
+		`SELECT id, user_id, title, filename, duration, aspect_ratio, output_ratio,
+		        COALESCE(thumbnail, ''), is_public, created_at, transcoded_at
+		 FROM videos WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+		userID, limit, offset,
 	)
 	if err != nil {
 		return nil, err
