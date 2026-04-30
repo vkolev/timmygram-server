@@ -16,23 +16,34 @@ type VideoController struct {
 	videoService *videoservice.VideoService
 	storagePath  string
 	serverURL    string
+	demoMode     bool
 }
 
-func NewVideoController(svc *videoservice.VideoService, storagePath, serverURL string) *VideoController {
-	return &VideoController{videoService: svc, storagePath: storagePath, serverURL: serverURL}
+func NewVideoController(svc *videoservice.VideoService, storagePath, serverURL string, demoMode bool) *VideoController {
+	return &VideoController{videoService: svc, storagePath: storagePath, serverURL: serverURL, demoMode: demoMode}
 }
 
 func (c *VideoController) ShowUploadPage(ctx *gin.Context) {
+	if c.demoMode {
+		ctx.Redirect(http.StatusSeeOther, "/dashboard")
+		return
+	}
+
 	username, _ := ctx.Get("username")
 	ctx.HTML(http.StatusOK, "upload.html", gin.H{
 		"title":     "Upload a video — TimmyGram",
 		"page":      "upload",
 		"serverURL": c.serverURL,
 		"username":  username,
+		"demoMode":  c.demoMode,
 	})
 }
 
 func (c *VideoController) HandleUpload(ctx *gin.Context) {
+	if c.demoMode {
+		ctx.Redirect(http.StatusSeeOther, "/dashboard")
+		return
+	}
 	username, _ := ctx.Get("username")
 	userID := ctx.GetInt("user_id")
 	title := ctx.PostForm("title")
@@ -45,6 +56,7 @@ func (c *VideoController) HandleUpload(ctx *gin.Context) {
 			"username":  username,
 			"error":     msg,
 			"titleVal":  title,
+			"demoMode":  c.demoMode,
 		})
 	}
 

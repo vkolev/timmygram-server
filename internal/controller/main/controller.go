@@ -12,10 +12,11 @@ import (
 type MainController struct {
 	serverURL    string
 	videoService *videoservice.VideoService
+	demoMode     bool
 }
 
-func NewMainController(serverURL string, videoService *videoservice.VideoService) *MainController {
-	return &MainController{serverURL: serverURL, videoService: videoService}
+func NewMainController(serverURL string, videoService *videoservice.VideoService, demoMode bool) *MainController {
+	return &MainController{serverURL: serverURL, videoService: videoService, demoMode: demoMode}
 }
 
 func (c *MainController) HealthCheck(ctx *gin.Context) {
@@ -57,5 +58,6 @@ func (c *MainController) Dashboard(ctx *gin.Context) {
 		"serverURL": c.serverURL,
 		"username":  username,
 		"videos":    videos,
+		"demoMode":  c.demoMode,
 	})
 }

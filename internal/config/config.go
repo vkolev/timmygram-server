@@ -15,6 +15,7 @@ type Config struct {
 	} `yaml:"server"`
 	DBPath    string `yaml:"db_path"`
 	JWTSecret string `yaml:"jwt_secret"`
+	DemoMode  bool   `yaml:"demo_mode"`
 	FFmpeg    struct {
 		MaxDuration int    `yaml:"max_duration"`
 		OutputRatio string `yaml:"output_ratio"`
@@ -31,6 +32,7 @@ func Load() *Config {
 	cfg.Server.URL = "http://192.168.178.85:8080"
 	cfg.DBPath = "./timmygramm.db"
 	cfg.JWTSecret = "your-strong-secret-key-here"
+	cfg.DemoMode = false
 	cfg.FFmpeg.MaxDuration = 60
 	cfg.FFmpeg.OutputRatio = "9:16"
 	cfg.FeedPageSize = 5
@@ -61,6 +63,12 @@ func Load() *Config {
 	}
 	if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret != "" {
 		cfg.JWTSecret = jwtSecret
+	}
+	if demoMode := os.Getenv("TIMMYGRAM_DEMO_MODE"); demoMode != "" {
+		enabled, err := strconv.ParseBool(demoMode)
+		if err == nil {
+			cfg.DemoMode = enabled
+		}
 	}
 	if pageSize := os.Getenv("TIMMYGRAM_FEED_PAGE_SIZE"); pageSize != "" {
 		perPage, err := strconv.Atoi(pageSize)
