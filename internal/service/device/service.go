@@ -1,6 +1,11 @@
 package device
 
 import (
+	"crypto/rand"
+	"errors"
+	"fmt"
+	"math/big"
+	"strings"
 	"time"
 	"timmygram/internal/model"
 	"timmygram/internal/repository"
@@ -15,6 +20,8 @@ type DeviceService struct {
 	jwtSecret  string
 	serverURL  string
 }
+
+var ErrInvalidPIN = errors.New("invalid or expired PIN")
 
 func NewDeviceService(deviceRepo repository.DeviceRepository, videoRepo repository.VideoRepository, jwtSecret, serverURL string) *DeviceService {
 	return &DeviceService{
@@ -32,6 +39,78 @@ func (s *DeviceService) GenerateDeviceToken(userID int) (string, error) {
 		"exp":     time.Now().Add(365 * 24 * time.Hour).Unix(),
 	})
 	return token.SignedString([]byte(s.jwtSecret))
+}
+
+func (s *DeviceService) GetOrCreatePairingPIN(userID int) (*model.DevicePairingPIN, error) {
+	if err := s.deviceRepo.DeleteExpiredPairingPINs(); err != nil {
+		return nil, err
+	}
+
+	existingPIN, err := s.deviceRepo.FindActivePairingPINByUserID(userID)
+	if err == nil {
+		return existingPIN, nil
+	}
+	if !errors.Is(err, model.ErrDevicePairingPINNotFound) {
+		return nil, err
+	}
+
+	token, err := s.GenerateDeviceToken(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	expiresAt := time.Now().Add(5 * time.Minute)
+
+	for attempts := 0; attempts < 10; attempts++ {
+		pin, err := generateSixDigitPIN()
+		if err != nil {
+			return nil, err
+		}
+
+		pairingPIN := &model.DevicePairingPIN{
+			UserID:    userID,
+			PIN:       pin,
+			Token:     token,
+			ExpiresAt: expiresAt,
+		}
+
+		if err := s.deviceRepo.CreatePairingPIN(pairingPIN); err == nil {
+			return pairingPIN, nil
+		}
+	}
+
+	return nil, errors.New("failed to create unique pairing pin")
+}
+
+func (s *DeviceService) ExchangePIN(pin string) (string, error) {
+
+	if err := s.deviceRepo.DeleteExpiredPairingPINs(); err != nil {
+		return "", err
+	}
+
+	pairingPIN, err := s.deviceRepo.FindActivePairingPIN(strings.TrimSpace(pin))
+	if err != nil {
+		if errors.Is(err, model.ErrDevicePairingPINNotFound) {
+			return "", ErrInvalidPIN
+		}
+
+		return "", err
+	}
+
+	if err := s.deviceRepo.DeletePairingPIN(pairingPIN.ID); err != nil {
+		return "", err
+	}
+
+	return pairingPIN.Token, nil
+}
+
+func generateSixDigitPIN() (string, error) {
+	n, err := rand.Int(rand.Reader, big.NewInt(1000000))
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%06d", n.Int64()), nil
 }
 
 func (s *DeviceService) GenerateQRPayload(userID int) (qr.QRPayload, error) {
@@ -66,11 +145,11 @@ func (s *DeviceService) DeleteDevice(id, userID int) error {
 	return s.deviceRepo.Delete(id, userID)
 }
 
-func (s *DeviceService) GetRandomFeed(userID int, deviceID string, limit int) ([]*model.Video, error) {
+func (s *DeviceService) GetRandomFeed(userID int, limit int) ([]*model.Video, error) {
 	return s.videoRepo.FindRandomByUserID(userID, limit)
 }
 
-func (s *DeviceService) GetFeed(userID int, deviceID string, page, pageSize int) ([]*model.Video, bool, error) {
+func (s *DeviceService) GetFeed(userID int, page, pageSize int) ([]*model.Video, bool, error) {
 	if page < 1 {
 		page = 1
 	}

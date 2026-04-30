@@ -1029,6 +1029,113 @@ button.video-delete-button:focus-visible {
     flex-wrap: wrap;
 }
 
+.device-pairing-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr);
+    gap: 32px;
+    align-items: stretch;
+}
+
+.qr-pairing-panel,
+.manual-device-setup {
+    min-height: 360px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(255, 241, 220, 0.58), rgba(255, 255, 255, 0.94));
+}
+
+.qr-pairing-panel {
+    display: grid;
+    place-items: center;
+    gap: 22px;
+    text-align: center;
+}
+
+.qr-image {
+    width: 240px;
+    height: 240px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: white;
+}
+
+.qr-instructions h2,
+.manual-device-setup h2 {
+    margin: 0 0 12px;
+    font-size: 1.35rem;
+    letter-spacing: -0.04em;
+}
+
+.qr-instructions ol {
+    display: inline-block;
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--muted);
+    line-height: 1.7;
+    text-align: left;
+}
+
+.manual-device-setup {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.manual-device-setup-header p:not(.eyebrow) {
+    max-width: 420px;
+    margin: 0 auto;
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+.manual-setup-values {
+    display: grid;
+    gap: 22px;
+    margin: 28px 0;
+}
+
+.manual-setup-value {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+}
+
+.manual-setup-value span {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.manual-setup-value strong {
+    width: 100%;
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--text);
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.manual-setup-value:last-child strong {
+    font-size: clamp(2.1rem, 5vw, 3.2rem);
+    letter-spacing: 0.16em;
+}
+
+.manual-setup-note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
 .device-list {
     list-style: none;
     margin: 0;
@@ -1108,28 +1215,6 @@ button.video-delete-button:focus-visible {
     color: var(--muted);
 }
 
-.device-status {
-    display: inline-flex;
-    align-items: center;
-    min-height: 22px;
-    padding: 0 8px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 900;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-}
-
-.device-status-active {
-    background: rgba(34, 197, 94, 0.12);
-    color: #15803d;
-}
-
-.device-status-blocked {
-    background: rgba(220, 38, 38, 0.12);
-    color: #b91c1c;
-}
-
 .device-actions {
     display: flex;
     align-items: center;
@@ -1150,10 +1235,12 @@ button.device-action-button {
     background-color: #ffffff;
     background-image: none;
     color: var(--text);
-    font: inherit;
+    -webkit-text-fill-color: currentColor;
+    font-family: inherit;
     font-size: 0.8rem;
     font-weight: 900;
     line-height: 1;
+    text-align: center;
     cursor: pointer;
     box-shadow: none;
     transition:
@@ -1167,43 +1254,70 @@ button.device-action-button:hover {
     transform: translateY(-1px);
 }
 
+button.device-action-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 122, 89, 0.16);
+}
+
 button.device-block-button {
     border-color: rgba(245, 158, 11, 0.32);
     background-color: rgba(245, 158, 11, 0.1);
+    background-image: none;
     color: #b45309;
+    -webkit-text-fill-color: #b45309;
 }
 
 button.device-block-button:hover {
     background-color: #f59e0b;
+    background-image: none;
     border-color: #f59e0b;
     color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
 }
 
 button.device-unblock-button {
     border-color: rgba(34, 197, 94, 0.32);
     background-color: rgba(34, 197, 94, 0.1);
+    background-image: none;
     color: #15803d;
+    -webkit-text-fill-color: #15803d;
 }
 
 button.device-unblock-button:hover {
     background-color: #16a34a;
+    background-image: none;
     border-color: #16a34a;
     color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
 }
 
 button.device-remove-button {
     border-color: rgba(220, 38, 38, 0.32);
     background-color: rgba(220, 38, 38, 0.1);
+    background-image: none;
     color: #b91c1c;
+    -webkit-text-fill-color: #b91c1c;
 }
 
 button.device-remove-button:hover {
     background-color: #dc2626;
+    background-image: none;
     border-color: #dc2626;
     color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
 }
 
 @media (max-width: 720px) {
+    .device-pairing-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .qr-image {
+        width: 100%;
+        max-width: 260px;
+        height: auto;
+    }
+
     .device-item {
         grid-template-columns: auto minmax(0, 1fr);
     }
@@ -1219,36 +1333,5 @@ button.device-remove-button:hover {
 
     button.device-action-button {
         width: 100%;
-    }
-}
-
-/* ── Responsive ──────────────────────────────────────────────── */
-
-@media (max-width: 840px) {
-    .navbar,
-    .site-footer,
-    .cta-panel {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .nav-links {
-        width: 100%;
-        overflow-x: auto;
-        padding-bottom: 6px;
-    }
-
-    .hero,
-    .auth-page,
-    .two-column {
-        grid-template-columns: 1fr;
-    }
-
-    .feature-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .phone-frame {
-        min-height: 480px;
     }
 }

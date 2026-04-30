@@ -9,15 +9,45 @@
     </div>
 
     <section class="dashboard-section devices-qr-section">
-        <div class="qr-layout">
-            <img src="/devices/qr" class="qr-image" alt="Scan to connect a device">
-            <div class="qr-instructions">
-                <h2>Connect a child's device</h2>
-                <ol>
-                    <li>Open the TimmyGram app on the child's device</li>
-                    <li>Tap <strong>Scan QR code</strong></li>
-                    <li>Point the camera at the code on the left</li>
-                </ol>
+        <div class="device-pairing-layout">
+            <div class="qr-pairing-panel">
+                <img src="/devices/qr" class="qr-image" alt="Scan to connect a device">
+
+                <div class="qr-instructions">
+                    <h2>Scan QR code</h2>
+                    <ol>
+                        <li>Open the TimmyGram app on the child's device</li>
+                        <li>Tap <strong>Scan QR code</strong></li>
+                        <li>Point the camera at the code above</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="manual-device-setup">
+                <div class="manual-device-setup-header">
+                    <p class="eyebrow">Manual setup</p>
+                    <h2>Enter connection details</h2>
+                    <p>
+                        Open the TimmyGram app on the child's device, choose manual setup,
+                        then enter the server URL and 6 digit PIN below.
+                    </p>
+                </div>
+
+                <div class="manual-setup-values">
+                    <div class="manual-setup-value">
+                        <span>Server URL</span>
+                        <strong>{{ .serverURL }}</strong>
+                    </div>
+
+                    <div class="manual-setup-value">
+                        <span>6 digit PIN</span>
+                        <strong>{{ .pin }}</strong>
+                    </div>
+                </div>
+
+                <p class="manual-setup-note">
+                    This PIN expires at {{ .pinExpires.Format "3:04 PM" }}. Refresh this page after it expires to generate a new PIN.
+                </p>
             </div>
         </div>
     </section>

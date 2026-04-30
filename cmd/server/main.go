@@ -110,6 +110,11 @@ func main() {
 		protected.POST("/devices/:id/delete", deviceCtrl.DeleteDevice)
 	}
 
+	apiPublic := router.Group("/api/v1")
+	{
+		apiPublic.POST("/auth/pin", deviceCtrl.HandlePINAuth)
+	}
+
 	api := router.Group("/api/v1")
 	api.Use(middleware.DeviceAuthMiddleware(cfg.JWTSecret))
 	{

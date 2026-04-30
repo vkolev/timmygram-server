@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -33,12 +34,20 @@ func (c *DeviceController) ShowDevicesPage(ctx *gin.Context) {
 		return
 	}
 
+	pairingPIN, err := c.deviceService.GetOrCreatePairingPIN(userID)
+	if err != nil {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
 	ctx.HTML(http.StatusOK, "devices.html", gin.H{
-		"title":     "Child devices — TimmyGram",
-		"page":      "devices",
-		"serverURL": c.serverURL,
-		"username":  username,
-		"devices":   devices,
+		"title":      "Child devices — TimmyGram",
+		"page":       "devices",
+		"serverURL":  c.serverURL,
+		"username":   username,
+		"devices":    devices,
+		"pin":        pairingPIN.PIN,
+		"pinExpires": pairingPIN.ExpiresAt,
 	})
 }
 
@@ -58,6 +67,31 @@ func (c *DeviceController) ServeQRCode(ctx *gin.Context) {
 	}
 
 	ctx.Data(http.StatusOK, "image/png", pngBytes)
+}
+
+type pinAuthRequest struct {
+	PIN string `json:"pin" binding:"required"`
+}
+
+func (c *DeviceController) HandlePINAuth(ctx *gin.Context) {
+	var req pinAuthRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "PIN is required."})
+		return
+	}
+
+	token, err := c.deviceService.ExchangePIN(strings.TrimSpace(req.PIN))
+	if err != nil {
+		if errors.Is(err, deviceservice.ErrInvalidPIN) {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired PIN."})
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to exchange PIN."})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 func (c *DeviceController) BlockDevice(ctx *gin.Context) {
@@ -131,18 +165,8 @@ func (c *DeviceController) HandlePing(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
-func deviceIDFromRequest(ctx *gin.Context) (string, bool) {
-	deviceID := strings.TrimSpace(ctx.GetHeader("X-Device-ID"))
-	if deviceID == "" {
-		deviceID = strings.TrimSpace(ctx.Query("device_id"))
-	}
-
-	return deviceID, deviceID != ""
-}
-
 func (c *DeviceController) GetFeed(ctx *gin.Context) {
 	userID := ctx.GetInt("user_id")
-	deviceID := ctx.GetString("device_id")
 
 	page := 1
 	pageParam := strings.TrimSpace(ctx.Param("page"))
@@ -155,7 +179,7 @@ func (c *DeviceController) GetFeed(ctx *gin.Context) {
 		page = parsedPage
 	}
 
-	videos, hasNextPage, err := c.deviceService.GetFeed(userID, deviceID, page, c.cfg.FeedPageSize)
+	videos, hasNextPage, err := c.deviceService.GetFeed(userID, page, c.cfg.FeedPageSize)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch feed."})
 		return
