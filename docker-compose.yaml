@@ -7,9 +7,9 @@ services:
     container_name: timmygram
     restart: unless-stopped
     ports:
-      - "${TIMMYGRAM_PORT:-8080}:8080"
+      - "${TIMMYGRAM_PORT:-8085}:8085"
     environment:
-      PORT: "${TIMMYGRAM_PORT:-8080}"
+      PORT: "${TIMMYGRAM_PORT:-8085}"
       JWT_SECRET: "${JWT_SECRET:-your-strong-secret-key-here}"
     volumes:
       # Mount your local config file into the container.
