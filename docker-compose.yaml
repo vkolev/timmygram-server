@@ -9,7 +9,7 @@ services:
     ports:
       - "${TIMMYGRAM_PORT:-8080}:8080"
     environment:
-      PORT: "8080"
+      PORT: "${TIMMYGRAM_PORT:-8080}"
       JWT_SECRET: "${JWT_SECRET:-your-strong-secret-key-here}"
     volumes:
       # Mount your local config file into the container.
