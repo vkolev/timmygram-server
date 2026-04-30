@@ -41,6 +41,10 @@ func Load() *Config {
 		configFile = "config.yaml"
 	}
 
+	if serverURL := os.Getenv("TIMMYGRAM_SERVER_URL"); serverURL != "" {
+		cfg.Server.URL = serverURL
+	}
+
 	if data, err := os.ReadFile("config.yaml"); err == nil {
 		err := yaml.Unmarshal(data, &cfg)
 		if err != nil {
