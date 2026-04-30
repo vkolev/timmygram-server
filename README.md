@@ -49,7 +49,7 @@ Password: `Demo873`
 
 ## TODOs
 
-- [x] Better video feed - currently it selects a random video form the database
+- [x] Better video feed. Currently, it selects a random video from the database
 - [x] Likes for videos
 - [x] Add a way to delete/edit videos
 - [x] Add a way to disable/enable access for a device
