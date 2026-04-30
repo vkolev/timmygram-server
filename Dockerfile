@@ -28,6 +28,6 @@ COPY migrations /app/migrations
 
 RUN mkdir -p /app/videos /app/data
 
-EXPOSE 8080
+EXPOSE 8085
 
 CMD ["/app/timmygram"]
