@@ -26,6 +26,9 @@ security and privacy.
 
 1. Clone the repository
 2. Modify the config.yaml file to your liking
+ - set db-path to `/app/data/timmygram.db`
+ - set video path to `/app/data/videos`
+ - update the public URL to the server in `server_url`
 3. Run `docker-compose up -d` to start the server
 4. Open the server on http://localhost:8080
 5. Create your parent account (username and password)
@@ -37,6 +40,12 @@ security and privacy.
 3. Run `go run main.go`
 4. The rest is the same as Docker
 
+
+## Demo
+
+To check the demo, please visit: https://o3nqm8rmi03dmtmy0isvbd5t.myspidy.com
+Login: `demo`
+Password: `Demo873`
 
 ## TODOs
 
