@@ -1,8 +1,8 @@
 # TimmyGram Server
 
-This is the backend for TimmyGramApp - an iOS application for watching short videos from the TimmyGram Server.
+This is the backend for [TimmyGramApp](https://github.com/vkolev/timmygram-app) - an iOS application for watching short videos from the TimmyGram Server.
 
-The server allows parents to create an Account, upload videos and connect devices with the TimmyGram App.
+The server allows parents to create an Account, upload videos, and connect devices with the TimmyGram App.
 
 ## Functionality
 
@@ -13,9 +13,9 @@ The server allows parents to create an Account, upload videos and connect device
 
 ## Why TimmyGram?
 
-Allowing children to access public and open social media networks there is no filter on the content.
+Allowing children to access public and open social media networks, there is no filter on the content.
 TimmyGram is designed to provide a safe and controlled environment for children to watch videos. 
-By allowing parents to selfhost their own video sharing platform, they have full control over the content 
+By allowing parents to self-host their own video sharing platform, they have full control over the content 
 their children can access. This ensures that the videos are appropriate and suitable for their age group. 
 The app only allows access to videos that are uploaded to the server, providing an additional layer of 
 security and privacy.
@@ -63,4 +63,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
