@@ -67,8 +67,8 @@ func main() {
 	deviceSvc := deviceservice.NewDeviceService(deviceRepo, videoRepo, cfg.JWTSecret, cfg.Server.URL)
 
 	authCtrl := authcontroller.NewAuthController(authSvc, cfg.Server.URL, cfg)
-	mainCtrl := maincontroller.NewMainController(cfg.Server.URL, videoSvc)
-	videoCtrl := videocontroller.NewVideoController(videoSvc, cfg.Storage.Path, cfg.Server.URL)
+	mainCtrl := maincontroller.NewMainController(cfg.Server.URL, videoSvc, cfg.DemoMode)
+	videoCtrl := videocontroller.NewVideoController(videoSvc, cfg.Storage.Path, cfg.Server.URL, cfg.DemoMode)
 	deviceCtrl := devicecontroller.NewDeviceController(deviceSvc, cfg.Server.URL, cfg)
 
 	router := gin.Default()
