@@ -16,7 +16,11 @@ services:
       - "${TIMMYGRAM_CONFIG_PATH:-./config.yaml}:/app/config.yaml:ro"
 
       # Mount your local videos directory into the container.
-      - "${TIMMYGRAM_VIDEOS_PATH:-./videos}:/app/videos"
+      - videos:/app/videos
 
       # Optional: keep SQLite database files persistent.
-      - "${TIMMYGRAM_DATA_PATH:-./data}:/app/data"
+      - timmygram-data:/app/data
+
+volumes:
+  timmygram-data:
+  videos:
