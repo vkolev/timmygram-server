@@ -11,6 +11,7 @@ jwt_secret: "your-strong-secret-key-here"
 
 feed_page_size: 5
 demo_mode: true
+multi_user: false
 
 storage:
   path: "./videos"

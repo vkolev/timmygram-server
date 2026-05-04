@@ -9,5 +9,6 @@ var (
 type User struct {
 	ID       int    `json:"id"`
 	Username string `json:"username"`
-	Password string `json:"-"` // Don't expose password in JSON
+	Password string `json:"-"`
+	IsOwner  bool   `json:"is_owner"`
 }

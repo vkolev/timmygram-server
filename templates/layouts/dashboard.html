@@ -23,10 +23,14 @@
         <nav class="dashboard-nav-links">
             <a href="/dashboard" class="{{ if eq .page "dashboard" }}active{{ end }}">My Feed</a>
             <a href="/devices" class="{{ if eq .page "devices" }}active{{ end }}">Devices</a>
+            {{ if and .MultiUser .is_owner }}
+            <a href="/users" class="{{ if eq .page "users" }}active{{ end }}">Users</a>
+            {{ end }}
         </nav>
 
         <div class="dashboard-user">
             <span class="dashboard-username">{{ .username }}</span>
+            <a href="/account/password" class="button button-small button-outline {{ if eq .page "change_password" }}active{{ end }}">Account</a>
             <form method="post" action="/logout">
                 <button type="submit" class="button button-small button-outline">Logout</button>
             </form>

@@ -12,6 +12,7 @@ import (
 type VideoRepository interface {
 	Create(v *model.Video) (int64, error)
 	FindByID(id int) (*model.Video, error)
+	FindAll() ([]*model.Video, error)
 	FindByUserID(userID int) ([]*model.Video, error)
 	FindRandomByUserID(userID, limit int) ([]*model.Video, error)
 	FindPageByUserID(userID, limit, offset int) ([]*model.Video, error)
@@ -55,6 +56,33 @@ func (r *SQLiteVideoRepository) FindByID(id int) (*model.Video, error) {
 		 GROUP BY v.id`, id,
 	)
 	return scanVideo(row)
+}
+
+func (r *SQLiteVideoRepository) FindAll() ([]*model.Video, error) {
+	rows, err := r.db.Query(
+		`SELECT v.id, v.user_id, v.title, v.filename, v.duration, v.aspect_ratio, v.output_ratio,
+		        COALESCE(v.thumbnail, ''), v.is_public,
+		        COUNT(vl.id) AS likes_count,
+		        v.created_at, v.transcoded_at
+		 FROM videos v
+		 LEFT JOIN video_likes vl ON vl.video_id = v.id
+		 GROUP BY v.id
+		 ORDER BY v.created_at DESC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var videos []*model.Video
+	for rows.Next() {
+		v, err := scanVideo(rows)
+		if err != nil {
+			return nil, err
+		}
+		videos = append(videos, v)
+	}
+	return videos, rows.Err()
 }
 
 func (r *SQLiteVideoRepository) FindByUserID(userID int) ([]*model.Video, error) {

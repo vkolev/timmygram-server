@@ -30,11 +30,13 @@ func (c *VideoController) ShowUploadPage(ctx *gin.Context) {
 	}
 
 	username, _ := ctx.Get("username")
+	isOwner := ctx.GetBool("is_owner")
 	ctx.HTML(http.StatusOK, "upload.html", gin.H{
 		"title":     "Upload a video — TimmyGram",
 		"page":      "upload",
 		"serverURL": c.serverURL,
 		"username":  username,
+		"is_owner":  isOwner,
 		"demoMode":  c.demoMode,
 	})
 }
@@ -121,9 +123,10 @@ func (c *VideoController) UpdateVideo(ctx *gin.Context) {
 	}
 
 	userID := ctx.GetInt("user_id")
+	isOwner := ctx.GetBool("is_owner")
 	title := ctx.PostForm("title")
 
-	if err := c.videoService.UpdateTitle(id, userID, title); err != nil {
+	if err := c.videoService.UpdateTitle(id, userID, isOwner, title); err != nil {
 		if errors.Is(err, model.ErrVideoNotFound) {
 			ctx.Status(http.StatusNotFound)
 		} else if errors.Is(err, model.ErrVideoForbidden) {
@@ -150,7 +153,8 @@ func (c *VideoController) DeleteVideo(ctx *gin.Context) {
 	}
 
 	userID := ctx.GetInt("user_id")
-	if err := c.videoService.DeleteVideo(id, userID); err != nil {
+	isOwner := ctx.GetBool("is_owner")
+	if err := c.videoService.DeleteVideo(id, userID, isOwner); err != nil {
 		if errors.Is(err, model.ErrVideoNotFound) {
 			ctx.Status(http.StatusNotFound)
 		} else if errors.Is(err, model.ErrVideoForbidden) {
@@ -176,12 +180,10 @@ func (c *VideoController) LikeVideo(ctx *gin.Context) {
 		return
 	}
 
-	likesCount, err := c.videoService.LikeVideo(v.ID, ctx.GetInt("user_id"), deviceID)
+	likesCount, err := c.videoService.LikeVideo(v.ID, deviceID)
 	if err != nil {
 		if errors.Is(err, model.ErrVideoNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "Video not found."})
-		} else if errors.Is(err, model.ErrVideoForbidden) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": "Access denied."})
 		} else {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like video."})
 		}
@@ -201,7 +203,7 @@ func (c *VideoController) GetVideoLikes(ctx *gin.Context) {
 		return
 	}
 
-	likesCount, err := c.videoService.CountLikes(v.ID, ctx.GetInt("user_id"))
+	likesCount, err := c.videoService.CountLikes(v.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count likes."})
 		return
@@ -264,14 +266,11 @@ func (c *VideoController) getAPIVideo(ctx *gin.Context) (*model.Video, bool) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID."})
 		return nil, false
 	}
-	userID := ctx.GetInt("user_id")
 
-	v, err := c.videoService.GetVideo(id, userID)
+	v, err := c.videoService.GetVideo(id)
 	if err != nil {
 		if errors.Is(err, model.ErrVideoNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "Video not found."})
-		} else if errors.Is(err, model.ErrVideoForbidden) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": "Access denied."})
 		} else {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error."})
 		}
@@ -286,14 +285,11 @@ func (c *VideoController) getOwnedVideo(ctx *gin.Context) (*model.Video, bool) {
 		ctx.Status(http.StatusBadRequest)
 		return nil, false
 	}
-	userID := ctx.GetInt("user_id")
 
-	v, err := c.videoService.GetVideo(id, userID)
+	v, err := c.videoService.GetVideo(id)
 	if err != nil {
 		if errors.Is(err, model.ErrVideoNotFound) {
 			ctx.Status(http.StatusNotFound)
-		} else if errors.Is(err, model.ErrVideoForbidden) {
-			ctx.Status(http.StatusForbidden)
 		} else {
 			ctx.Status(http.StatusInternalServerError)
 		}

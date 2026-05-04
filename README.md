@@ -10,6 +10,11 @@ The server allows parents to create an Account, upload videos, and connect devic
 - Uploads videos
 - Transcode videos to portrait format (16:9) and enforces length of the video to 60 seconds.
 - Connects devices with the TimmyGram App, by generating a unique QR code.
+- Allows parents to delete/edit videos
+- Allows parents to disable/enable access for a device.
+- Allow multiple users (first user is owner, he can create other users) (can be allowed in config.yaml `multi_user: true`)
+- Added demo-mode flag (in config.yaml `demo_mode: true`)
+- Settings can be overwritten with ENV variables
 
 ## Why TimmyGram?
 
@@ -53,7 +58,7 @@ Password: `Demo873`
 - [x] Likes for videos
 - [x] Add a way to delete/edit videos
 - [x] Add a way to disable/enable access for a device
-- [ ] Eventually allow multiple parents to upload videos
+- [x] Eventually allow multiple parents to upload videos
 
 ## License: MIT License
 

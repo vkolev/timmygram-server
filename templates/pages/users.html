@@ -1,0 +1,82 @@
+{{ template "dashboard-base" . }}
+
+{{ define "content" }}
+<div class="dashboard-content">
+    <div class="dashboard-welcome">
+        <p class="eyebrow">Owner dashboard</p>
+        <h1>Manage users</h1>
+        <p class="dashboard-subtitle">Add or remove users who can log in to this instance.</p>
+    </div>
+
+    <section class="dashboard-section">
+        <div class="dashboard-section-header">
+            <h2>Add user</h2>
+        </div>
+
+        {{ if .error }}
+        <p class="form-error">{{ .error }}</p>
+        {{ end }}
+
+        <form method="post" action="/users" class="upload-form">
+            <div class="upload-field">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text"
+                       autocomplete="off" placeholder="e.g. grandma" required>
+            </div>
+
+            <div class="upload-field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password"
+                       autocomplete="new-password" required>
+            </div>
+
+            <div class="upload-actions">
+                <button type="submit" class="button">Add user</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="dashboard-section">
+        <div class="dashboard-section-header">
+            <h2>Users</h2>
+        </div>
+
+        {{ if .users }}
+        <div class="device-list" role="list">
+            {{ range .users }}
+            <div class="device-item" role="listitem">
+                <div class="device-icon">👤</div>
+
+                <div class="device-info">
+                    <div class="device-title-row">
+                        <p class="device-name">{{ .Username }}</p>
+                        {{ if .IsOwner }}
+                        <span class="device-status device-status-active">Owner</span>
+                        {{ end }}
+                    </div>
+                </div>
+
+                {{ if not .IsOwner }}
+                <div class="device-actions">
+                    <form
+                        method="post"
+                        action="/users/{{ .ID }}/delete"
+                        onsubmit="return confirm('Remove {{ .Username }}? This will delete all their content.');"
+                    >
+                        <button type="submit" class="device-action-button device-remove-button">Remove</button>
+                    </form>
+                </div>
+                {{ end }}
+            </div>
+            {{ end }}
+        </div>
+        {{ else }}
+        <div class="empty-state">
+            <div class="empty-icon">👤</div>
+            <h3>No users yet</h3>
+            <p>Add a user above to get started.</p>
+        </div>
+        {{ end }}
+    </section>
+</div>
+{{ end }}

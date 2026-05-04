@@ -40,11 +40,13 @@ func (c *DeviceController) ShowDevicesPage(ctx *gin.Context) {
 		return
 	}
 
+	isOwner := ctx.GetBool("is_owner")
 	ctx.HTML(http.StatusOK, "devices.html", gin.H{
 		"title":      "Child devices — TimmyGram",
 		"page":       "devices",
 		"serverURL":  c.serverURL,
 		"username":   username,
+		"is_owner":   isOwner,
 		"devices":    devices,
 		"pin":        pairingPIN.PIN,
 		"pinExpires": pairingPIN.ExpiresAt,
