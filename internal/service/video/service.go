@@ -171,48 +171,49 @@ func (s *VideoService) GetUserVideos(userID int) ([]*model.Video, error) {
 	return s.videoRepo.FindByUserID(userID)
 }
 
-func (s *VideoService) GetVideo(id, userID int) (*model.Video, error) {
-	v, err := s.videoRepo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	if v.UserID != userID {
-		return nil, model.ErrVideoForbidden
-	}
-	return v, nil
+func (s *VideoService) GetAllVideos() ([]*model.Video, error) {
+	return s.videoRepo.FindAll()
 }
 
-func (s *VideoService) UpdateTitle(id, userID int, title string) error {
-	v, err := s.GetVideo(id, userID)
+// GetVideo fetches a video by ID. Any authenticated user may read any video.
+func (s *VideoService) GetVideo(id int) (*model.Video, error) {
+	return s.videoRepo.FindByID(id)
+}
+
+func (s *VideoService) UpdateTitle(id, userID int, isOwner bool, title string) error {
+	v, err := s.videoRepo.FindByID(id)
 	if err != nil {
 		return err
 	}
-
+	if !isOwner && v.UserID != userID {
+		return model.ErrVideoForbidden
+	}
 	return s.videoRepo.UpdateTitle(v.ID, strings.TrimSpace(title))
 }
 
-func (s *VideoService) LikeVideo(id, userID int, deviceID string) (int, error) {
-	v, err := s.GetVideo(id, userID)
+func (s *VideoService) LikeVideo(id int, deviceID string) (int, error) {
+	v, err := s.videoRepo.FindByID(id)
 	if err != nil {
 		return 0, err
 	}
-
 	return s.videoRepo.LikeVideo(v.ID, strings.TrimSpace(deviceID))
 }
 
-func (s *VideoService) CountLikes(id, userID int) (int, error) {
-	v, err := s.GetVideo(id, userID)
+func (s *VideoService) CountLikes(id int) (int, error) {
+	v, err := s.videoRepo.FindByID(id)
 	if err != nil {
 		return 0, err
 	}
-
 	return s.videoRepo.CountLikes(v.ID)
 }
 
-func (s *VideoService) DeleteVideo(id, userID int) error {
-	v, err := s.GetVideo(id, userID)
+func (s *VideoService) DeleteVideo(id, userID int, isOwner bool) error {
+	v, err := s.videoRepo.FindByID(id)
 	if err != nil {
 		return err
+	}
+	if !isOwner && v.UserID != userID {
+		return model.ErrVideoForbidden
 	}
 
 	if err := s.videoRepo.Delete(v.ID); err != nil {

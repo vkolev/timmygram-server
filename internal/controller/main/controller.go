@@ -13,10 +13,11 @@ type MainController struct {
 	serverURL    string
 	videoService *videoservice.VideoService
 	demoMode     bool
+	multiUser    bool
 }
 
-func NewMainController(serverURL string, videoService *videoservice.VideoService, demoMode bool) *MainController {
-	return &MainController{serverURL: serverURL, videoService: videoService, demoMode: demoMode}
+func NewMainController(serverURL string, videoService *videoservice.VideoService, demoMode, multiUser bool) *MainController {
+	return &MainController{serverURL: serverURL, videoService: videoService, demoMode: demoMode, multiUser: multiUser}
 }
 
 func (c *MainController) HealthCheck(ctx *gin.Context) {
@@ -46,18 +47,25 @@ func (c *MainController) About(ctx *gin.Context) {
 func (c *MainController) Dashboard(ctx *gin.Context) {
 	username, _ := ctx.Get("username")
 	userID := ctx.GetInt("user_id")
+	isOwner := ctx.GetBool("is_owner")
 
 	var videos []*model.Video
-	if v, err := c.videoService.GetUserVideos(userID); err == nil {
-		videos = v
+	if c.multiUser {
+		if v, err := c.videoService.GetAllVideos(); err == nil {
+			videos = v
+		}
+	} else {
+		if v, err := c.videoService.GetUserVideos(userID); err == nil {
+			videos = v
+		}
 	}
 
-	isOwner := ctx.GetBool("is_owner")
 	ctx.HTML(http.StatusOK, "dashboard.html", gin.H{
 		"title":     "Dashboard — TimmyGram",
 		"page":      "dashboard",
 		"serverURL": c.serverURL,
 		"username":  username,
+		"user_id":   userID,
 		"is_owner":  isOwner,
 		"videos":    videos,
 		"demoMode":  c.demoMode,

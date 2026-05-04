@@ -21,6 +21,7 @@
         {{ if .videos }}
         <div class="video-grid">
             {{ range .videos }}
+            {{ $canEdit := or $.is_owner (eq .UserID $.user_id) }}
             <div class="video-card-item" data-video-card data-video-id="{{ .ID }}" data-processing="{{ .IsProcessing }}">
                 {{ if .Thumbnail }}
                 <a href="/videos/{{ .ID }}/stream" class="video-thumb-link">
@@ -38,7 +39,7 @@
                 {{ end }}
                 <div class="video-card-body">
                     <form method="post" action="/videos/{{ .ID }}" class="video-edit-form">
-                        {{ if not $.demoMode }}
+                        {{ if and (not $.demoMode) $canEdit }}
                         <input
                             type="text"
                             name="title"
@@ -50,7 +51,9 @@
                         <button type="submit" class="video-icon-button video-save-button" aria-label="Save video title" title="Save title">✓</button>
                         {{ else }}
                         <input type="text" name="title" value="{{ .Title }}" class="video-title-input" aria-label="Video title" disabled>
+                        {{ if $.demoMode }}
                         <button type="button" class="video-icon-button video-save-button disabled" aria-label="Save video title" title="Save title">✓</button>
+                        {{ end }}
                         {{ end }}
                     </form>
 
@@ -60,7 +63,7 @@
                     <p class="video-meta" data-video-meta>Processing…</p>
                     {{ end }}
 
-                    {{ if not $.demoMode }}
+                    {{ if and (not $.demoMode) $canEdit }}
                     <form
                         method="post"
                         action="/videos/{{ .ID }}/delete"
@@ -72,13 +75,8 @@
                             <span>Delete</span>
                         </button>
                     </form>
-                    {{ else }}
-                    <form
-                            method="GET"
-                            action="/dashboard"
-                            class="video-delete-form"
-                            onsubmit=""
-                    >
+                    {{ else if $.demoMode }}
+                    <form method="GET" action="/dashboard" class="video-delete-form">
                         <button type="button" class="video-delete-button disabled" aria-label="Delete video">
                             <span aria-hidden="true">🗑</span>
                             <span>Delete</span>
