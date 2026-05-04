@@ -38,6 +38,7 @@
                 {{ end }}
                 <div class="video-card-body">
                     <form method="post" action="/videos/{{ .ID }}" class="video-edit-form">
+                        {{ if not $.demoMode }}
                         <input
                             type="text"
                             name="title"
@@ -47,6 +48,10 @@
                             aria-label="Video title"
                         >
                         <button type="submit" class="video-icon-button video-save-button" aria-label="Save video title" title="Save title">✓</button>
+                        {{ else }}
+                        <input type="text" name="title" value="{{ .Title }}" class="video-title-input" aria-label="Video title" disabled>
+                        <button type="button" class="video-icon-button video-save-button disabled" aria-label="Save video title" title="Save title">✓</button>
+                        {{ end }}
                     </form>
 
                     {{ if not .IsProcessing }}
@@ -55,6 +60,7 @@
                     <p class="video-meta" data-video-meta>Processing…</p>
                     {{ end }}
 
+                    {{ if not $.demoMode }}
                     <form
                         method="post"
                         action="/videos/{{ .ID }}/delete"
@@ -66,6 +72,20 @@
                             <span>Delete</span>
                         </button>
                     </form>
+                    {{ else }}
+                    <form
+                            method="GET"
+                            action="/dashboard"
+                            class="video-delete-form"
+                            onsubmit=""
+                    >
+                        <button type="button" class="video-delete-button disabled" aria-label="Delete video">
+                            <span aria-hidden="true">🗑</span>
+                            <span>Delete</span>
+                        </button>
+                    </form>
+                    {{ end }}
+
                 </div>
             </div>
             {{ end }}

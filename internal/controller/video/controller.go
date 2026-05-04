@@ -109,6 +109,11 @@ func (c *VideoController) ServeThumbnail(ctx *gin.Context) {
 }
 
 func (c *VideoController) UpdateVideo(ctx *gin.Context) {
+	if c.demoMode {
+		ctx.Redirect(http.StatusSeeOther, "/dashboard")
+		return
+	}
+
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -133,6 +138,11 @@ func (c *VideoController) UpdateVideo(ctx *gin.Context) {
 }
 
 func (c *VideoController) DeleteVideo(ctx *gin.Context) {
+	if c.demoMode {
+		ctx.Redirect(http.StatusSeeOther, "/dashboard")
+		return
+	}
+
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.Status(http.StatusBadRequest)
