@@ -146,6 +146,10 @@ func (c *AuthController) ChangePassword(ctx *gin.Context) {
 }
 
 func (c *AuthController) HandleChangePassword(ctx *gin.Context) {
+	if c.cfg.DemoMode {
+		ctx.Redirect(http.StatusSeeOther, "/dashboard")
+		return
+	}
 	userID := ctx.GetInt("user_id")
 	username := ctx.GetString("username")
 	isOwner := ctx.GetBool("is_owner")

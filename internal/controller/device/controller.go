@@ -45,6 +45,7 @@ func (c *DeviceController) ShowDevicesPage(ctx *gin.Context) {
 		"title":      "Child devices — TimmyGram",
 		"page":       "devices",
 		"serverURL":  c.serverURL,
+		"demoMode":   c.cfg.DemoMode,
 		"username":   username,
 		"is_owner":   isOwner,
 		"devices":    devices,
