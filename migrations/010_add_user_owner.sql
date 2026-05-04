@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN is_owner INTEGER NOT NULL DEFAULT 0;
+UPDATE users SET is_owner = 1 WHERE id = (SELECT MIN(id) FROM users);

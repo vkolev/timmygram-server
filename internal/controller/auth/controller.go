@@ -115,7 +115,7 @@ func (c *AuthController) HandleSetup(ctx *gin.Context) {
 		return
 	}
 
-	if _, err := c.authService.Register(username, password); err != nil {
+	if _, err := c.authService.Register(username, password, true); err != nil {
 		if errors.Is(err, service.ErrUsernameTaken) {
 			renderErr("That username is already taken.")
 		} else {
@@ -134,6 +134,64 @@ func (c *AuthController) HandleSetup(ctx *gin.Context) {
 	ctx.SetSameSite(http.SameSiteLaxMode)
 	ctx.SetCookie(sessionCookie, token, sessionMaxAge, "/", "", false, true)
 	ctx.Redirect(http.StatusSeeOther, "/dashboard")
+}
+
+func (c *AuthController) ChangePassword(ctx *gin.Context) {
+	ctx.HTML(http.StatusOK, "change_password.html", gin.H{
+		"title":    "Change Password — TimmyGram",
+		"page":     "change_password",
+		"username": ctx.GetString("username"),
+		"is_owner": ctx.GetBool("is_owner"),
+	})
+}
+
+func (c *AuthController) HandleChangePassword(ctx *gin.Context) {
+	userID := ctx.GetInt("user_id")
+	username := ctx.GetString("username")
+	isOwner := ctx.GetBool("is_owner")
+	current := ctx.PostForm("current_password")
+	newPass := ctx.PostForm("new_password")
+	confirm := ctx.PostForm("confirm_password")
+
+	renderErr := func(msg string) {
+		ctx.HTML(http.StatusUnprocessableEntity, "change_password.html", gin.H{
+			"title":    "Change Password — TimmyGram",
+			"page":     "change_password",
+			"username": username,
+			"is_owner": isOwner,
+			"error":    msg,
+		})
+	}
+
+	if current == "" || newPass == "" || confirm == "" {
+		renderErr("All fields are required.")
+		return
+	}
+	if len(newPass) < 6 {
+		renderErr("New password must be at least 6 characters.")
+		return
+	}
+	if newPass != confirm {
+		renderErr("New passwords do not match.")
+		return
+	}
+
+	if err := c.authService.ChangePassword(userID, current, newPass); err != nil {
+		if errors.Is(err, service.ErrWrongPassword) {
+			renderErr("Current password is incorrect.")
+		} else {
+			renderErr("Failed to change password. Please try again.")
+		}
+		return
+	}
+
+	ctx.HTML(http.StatusOK, "change_password.html", gin.H{
+		"title":    "Change Password — TimmyGram",
+		"page":     "change_password",
+		"username": username,
+		"is_owner": isOwner,
+		"success":  "Password changed successfully.",
+	})
 }
 
 func (c *AuthController) HandleLogout(ctx *gin.Context) {

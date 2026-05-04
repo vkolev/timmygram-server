@@ -52,11 +52,13 @@ func (c *MainController) Dashboard(ctx *gin.Context) {
 		videos = v
 	}
 
+	isOwner := ctx.GetBool("is_owner")
 	ctx.HTML(http.StatusOK, "dashboard.html", gin.H{
 		"title":     "Dashboard — TimmyGram",
 		"page":      "dashboard",
 		"serverURL": c.serverURL,
 		"username":  username,
+		"is_owner":  isOwner,
 		"videos":    videos,
 		"demoMode":  c.demoMode,
 	})

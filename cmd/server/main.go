@@ -6,11 +6,13 @@ import (
 	authcontroller "timmygram/internal/controller/auth"
 	devicecontroller "timmygram/internal/controller/device"
 	maincontroller "timmygram/internal/controller/main"
+	usercontroller "timmygram/internal/controller/user"
 	videocontroller "timmygram/internal/controller/video"
 	"timmygram/internal/middleware"
 	"timmygram/internal/repository"
 	authservice "timmygram/internal/service/auth"
 	deviceservice "timmygram/internal/service/device"
+	userservice "timmygram/internal/service/user"
 	videoservice "timmygram/internal/service/video"
 	"timmygram/migrations"
 
@@ -20,18 +22,19 @@ import (
 )
 
 type appRenderer struct {
-	render multitemplate.Renderer
+	render    multitemplate.Renderer
+	multiUser bool
 }
 
 func (r appRenderer) Instance(name string, data any) render.Render {
 	if h, ok := data.(gin.H); ok {
 		h["AppVersion"] = version.Version
+		h["MultiUser"] = r.multiUser
 	}
-
 	return r.render.Instance(name, data)
 }
 
-func createRenderer() render.HTMLRender {
+func createRenderer(multiUser bool) render.HTMLRender {
 	r := multitemplate.NewRenderer()
 	base := "templates/layouts/base.html"
 	dashboard := "templates/layouts/dashboard.html"
@@ -39,10 +42,14 @@ func createRenderer() render.HTMLRender {
 	for _, p := range []string{"home", "about", "login", "setup"} {
 		r.AddFromFiles(p+".html", "templates/pages/"+p+".html", base)
 	}
-	for _, p := range []string{"dashboard", "upload", "devices"} {
+	dashboardPages := []string{"dashboard", "upload", "devices", "change_password"}
+	if multiUser {
+		dashboardPages = append(dashboardPages, "users")
+	}
+	for _, p := range dashboardPages {
 		r.AddFromFiles(p+".html", "templates/pages/"+p+".html", dashboard)
 	}
-	return appRenderer{render: r}
+	return appRenderer{render: r, multiUser: multiUser}
 }
 
 func main() {
@@ -75,7 +82,7 @@ func main() {
 	router.MaxMultipartMemory = 8 << 20 // 8 MB in memory, rest spills to disk
 	router.Static("/static", "./static")
 	router.StaticFile("/favicon.ico", "./static/favicon/favicon.ico")
-	router.HTMLRender = createRenderer()
+	router.HTMLRender = createRenderer(cfg.MultiUser)
 
 	router.Use(middleware.SessionMiddleware(cfg.JWTSecret))
 	// Detect if first run and redirect to setup page.
@@ -108,6 +115,23 @@ func main() {
 		protected.POST("/devices/:id/block", deviceCtrl.BlockDevice)
 		protected.POST("/devices/:id/unblock", deviceCtrl.UnblockDevice)
 		protected.POST("/devices/:id/delete", deviceCtrl.DeleteDevice)
+
+		protected.GET("/account/password", authCtrl.ChangePassword)
+		protected.POST("/account/password", authCtrl.HandleChangePassword)
+	}
+
+	if cfg.MultiUser {
+		userSvc := userservice.NewUserService(userRepo)
+		userCtrl := usercontroller.NewUserController(userSvc)
+
+		ownerOnly := router.Group("/")
+		ownerOnly.Use(middleware.RequireSession())
+		ownerOnly.Use(middleware.RequireOwner())
+		{
+			ownerOnly.GET("/users", userCtrl.ShowUsersPage)
+			ownerOnly.POST("/users", userCtrl.HandleCreateUser)
+			ownerOnly.POST("/users/:id/delete", userCtrl.HandleDeleteUser)
+		}
 	}
 
 	apiPublic := router.Group("/api/v1")

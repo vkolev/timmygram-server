@@ -973,7 +973,8 @@ button.video-delete-button:focus-visible {
     font-size: 0.85rem;
 }
 
-.upload-field input[type="text"] {
+.upload-field input[type="text"],
+.upload-field input[type="password"] {
     width: 100%;
     min-height: 52px;
     padding: 0 16px;
@@ -985,7 +986,8 @@ button.video-delete-button:focus-visible {
     outline: none;
 }
 
-.upload-field input[type="text"]:focus {
+.upload-field input[type="text"]:focus,
+.upload-field input[type="password"]:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(255, 122, 89, 0.14);
 }

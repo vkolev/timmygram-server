@@ -30,11 +30,13 @@ func (c *VideoController) ShowUploadPage(ctx *gin.Context) {
 	}
 
 	username, _ := ctx.Get("username")
+	isOwner := ctx.GetBool("is_owner")
 	ctx.HTML(http.StatusOK, "upload.html", gin.H{
 		"title":     "Upload a video — TimmyGram",
 		"page":      "upload",
 		"serverURL": c.serverURL,
 		"username":  username,
+		"is_owner":  isOwner,
 		"demoMode":  c.demoMode,
 	})
 }

@@ -54,9 +54,11 @@ func SessionMiddleware(jwtSecret string) gin.HandlerFunc {
 		}
 
 		username, _ := claims["username"].(string)
+		isOwner, _ := claims["is_owner"].(bool)
 		ctx.Set("is_authenticated", true)
 		ctx.Set("user_id", int(userID))
 		ctx.Set("username", username)
+		ctx.Set("is_owner", isOwner)
 		ctx.Next()
 	}
 }
@@ -69,6 +71,19 @@ func RequireSession() gin.HandlerFunc {
 		if auth, ok := isAuth.(bool); !ok || !auth {
 			ctx.Redirect(http.StatusSeeOther, "/login")
 			ctx.Abort()
+			return
+		}
+		ctx.Next()
+	}
+}
+
+// RequireOwner rejects requests from non-owner users with 403.
+// Must be used after SessionMiddleware and RequireSession.
+func RequireOwner() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		isOwner, _ := ctx.Get("is_owner")
+		if owner, ok := isOwner.(bool); !ok || !owner {
+			ctx.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 		ctx.Next()
