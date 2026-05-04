@@ -30,7 +30,9 @@
 
         <div class="dashboard-user">
             <span class="dashboard-username">{{ .username }}</span>
+            {{ if not .demoMode }}
             <a href="/account/password" class="button button-small button-outline {{ if eq .page "change_password" }}active{{ end }}">Account</a>
+            {{ end }}
             <form method="post" action="/logout">
                 <button type="submit" class="button button-small button-outline">Logout</button>
             </form>
