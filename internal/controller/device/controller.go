@@ -160,7 +160,13 @@ func (c *DeviceController) HandlePing(ctx *gin.Context) {
 	}
 
 	userID := ctx.GetInt("user_id")
-	if err := c.deviceService.RegisterDevice(userID, req.DeviceID, req.DeviceName); err != nil {
+	deviceID := strings.TrimSpace(req.DeviceID)
+	if deviceID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "device_id and device_name are required."})
+		return
+	}
+
+	if err := c.deviceService.RegisterDevice(userID, deviceID, strings.TrimSpace(req.DeviceName)); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register device."})
 		return
 	}
